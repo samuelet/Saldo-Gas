@@ -1,0 +1,11 @@
+.saldo_note, form fieldset, .noprint {
+  display: none;
+}
+
+tr, th, tbody th {
+  border-style:hidden !important;
+}
+
+table fieldset {
+ display:block;
+}

@@ -1,0 +1,31 @@
+input.form-text.jscalendar {
+width:auto !important;
+}
+
+div.form-item.jscalendar {
+ width:auto !important;
+}
+
+div.saldo_valid { 
+ height: 25px;
+ background: transparent url("../misc/watchdog-ok.png") no-repeat scroll 0% 0%
+}
+
+div.saldo_novalid { 
+ height: 25px;
+ background: transparent url("../misc/watchdog-error.png") no-repeat scroll 0% 0%
+}
+
+div.saldo_note { 
+ font-size: 80%;
+ font-style: italic;
+}
+
+div.saldo_menu { 
+ font-size: 80%;
+}
+
+a.saldo_selected { 
+ color: #FFFFFF !important;
+ background-color: #000000 !important;
+}
