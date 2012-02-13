@@ -26,17 +26,33 @@ function pay_impexp_form() {
 					    );
     $form['imported'] = array('#value' =>$flag,'#weight' => 2);
   } else {
+    $form['help'] = array('#type' => 'fieldset',
+				'#weight' => -1,
+				'#title' => 'Aiuto',
+				'#collapsible'=>true,
+				'#collapsed'=>true,
+				'#value' => "<div>Questa funzionalit&agrave; permette di velocizzare l'inserimento dei versamenti utente.<br /><ul>
+					<li>Utilizzare il pulsante <strong>Esporta</strong> per creare un file csv Excel con tutti gli utenti e salvarlo sul proprio pc.</li>
+					<li>Aprire Excel e, tramite <strong>File->Apri</strong>, aprire il file creato.
+					<strong>ATTENZIONE!</strong> Non aprire il file semplicemente cliccandoci sopra, ma seguire le istruzioni precedenti o la successiva procedura Importazione Guidata Testo potrebbe non essere visualizzata.</li>
+					<li>Seguire la procedura di <strong>Importazione Guidata Testo</strong>,
+					verificando che nelle varie schermate siano selezionate le opzioni:
+						<ul><li><strong>Tipo di File:</strong> delimitato</li><li><strong>Inizia ad importare dalla riga:</strong> 1</li><li><strong>Delimitatore:</strong> testo</li><li><strong>Qualificatore di testo:</strong> \"\" </li></ul></li>
+					Sar&agrave ora possibile compilare il campo versamento nel file excel per gli utenti voluti, ad esempio durante la consegna, e successivamente importarlo nel Gestionale tramite il sottostante <strong>Importa csv</strong>.
+					</ul></div>",
+		       );
+
     $form['export'] = array(
 			    '#type' => 'fieldset',
 			    '#title' => 'Esporta versamenti',
 			    );
-    
+
     $form['export']['esubmit'] = array(
 				      '#description' => 'Esporta in un file excel la lista degli utenti in modo da potere in seguito compilarlo con i versamenti ed importartarlo.',
 				      '#type' => 'submit',
 				      '#value' => 'Esporta',
 				    );
-    
+
     //Il csv deve ancora essere caricato
     $btn='Controlla';
     $form['import']['upload'] = array(
@@ -52,7 +68,7 @@ function pay_impexp_form() {
 				     '#type' => 'hidden',
 				     '#value' => 'csvpay',
 				     );
-  
+ 
   $form['import']['submit'] = array(
 					  '#type' => 'submit',
 					  '#value' => $btn,
