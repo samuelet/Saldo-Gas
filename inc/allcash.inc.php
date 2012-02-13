@@ -12,7 +12,7 @@ function all_cash_form() {
 				    '#type' => 'textfield',
 				    '#title' => 'Altra data riepilogo movimenti',
 				    '#attributes' => array('class' => 'jscalendar'),
-				    '#description' => 'Inserire il giorno di cui mostrare i saldo movimenti nel formato gg/mm/aaaa',
+				    '#description' => 'Se questo campo &egrave; vuoto (default), allora il riepilogo si riferisce ad oggi. Se invece si vuole avere il riepilogo ad un determinato giorno, inserire la data nel formato gg/mm/aaaa',
 				    '#jscalendar_ifFormat' => '%d/%m/%Y',
 				    '#jscalendar_showsTime' => 'false',
 				    '#size' => 10,
@@ -54,7 +54,7 @@ function all_cash_form() {
   }
   $out=theme('table',$headers,array($asaldo));
 
-  $asaldo['Saldo Fornitori'] = $asaldo["Pagamento Fornitore"]-$asaldo["Ordine Utente"];
+  $asaldo['Saldo Fornitori'] = $asaldo["Pagamento Fornitore"] - $asaldo["Ordine Utente"];
   $asaldo['Saldo Cassa'] = $asaldo["Versamento Utente"] - $asaldo["Pagamento Fornitore"] - $asaldo["Spesa Gas"] + $asaldo["Entrata Gas"];
   $asaldo['Salva Resti']= $asaldo["Credito Utente"] + $asaldo["Versamento Utente"] - $asaldo["Debito Utente"] - $asaldo["Ordine Utente"];
   $asaldo['Fondo Spese'] = $asaldo["Saldo Fornitori"] + $asaldo["Saldo Cassa"] - $asaldo["Salva Resti"];
