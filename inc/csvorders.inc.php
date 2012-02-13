@@ -22,8 +22,8 @@ function orders_import_form() {
 					    );
     $form['orders_import']['override'] = array(
 					       '#type' => 'checkbox',
-					       '#title' => 'Aggiorna',
-					       '#description' => 'Nel caso esistano gi&agrave; degli ordini per le <strong>date consegna ordine</strong> impostate verr&agrave; mostrato un messaggio di avviso se la casella &egrave deselezionata. Se invece &egrave selezionata, tutti gli ordini aperti e non validati verranno automaticamente aggiornati con i nuovi valori importati.',
+					       '#title' => 'Forza aggiornamento',
+					       '#description' => 'Se non selezionata, verr&agrave; richiesta un\' ulteriore conferma nel caso nel gestionale siano gi&agrave; presenti degli ordini per la <strong>data consegna ordine</strong> impostata. Se invece &egrave selezionata, verranno sovrascritti senza ulteriore conferma gli ordini precedentemente importati ma solo se ancora aperti e non validati.',
 					       );
     $form['orders_import']['cancel'] = array(
 					     '#type' => 'button',
@@ -234,7 +234,7 @@ function orders_import_form_validate($form_id, $form_values) {
 	  while ($oids= db_fetch_array($result)) {
 	    //Controllo che non esistano ordini gia' importati per le date di consegna impostate
 	    if (!$_POST['override']) {
-	      form_set_error('date'.$k,"Esiste gi&agrave; un ordine al fornitore <em>".$fkey."</em> per la data ".datemysql($cst_date[$k],"-","/").". Se vuoi aggiornarlo, seleziona l'opzione <strong>Aggiorna</strong>.");
+	      form_set_error('date'.$k,"Esiste gi&agrave; un ordine al fornitore <em>".$fkey."</em> per la data ".datemysql($cst_date[$k],"-","/").". Se vuoi sovrascriverlo, seleziona l'opzione <strong>Forza aggiornamento</strong>.");
 	    }
 	    //Controllo lock e validate.
 	    if ($oids['olock'] || $oids['ovalid']) {
