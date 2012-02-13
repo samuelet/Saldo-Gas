@@ -1,9 +1,37 @@
-Istruzioni per installare il modulo Saldo:
+Il gestionale "Saldo Gas":
+
+Prima di tutto è necessario aver installato e configurato un sito web utilizzando il CMS Drupal, liberamente scaricabile alla pagina:
+http://drupal.org/project/drupal
+
+Dopodichè si può scaricare il modulo Saldo Gas in base alla versione di Drupal utilizzata:
+http://samuele.netsons.org/darcs/saldo/saldo.tar.gz ---> VERSIONE DRUPAL 5.x
+http://samuele.netsons.org/darcs/saldo6.x/saldo.tar.gz ---> VERSIONE DRUPAL 6.x
+
+In alternativa:
+https://github.com/samuelet/Saldo-Gas/zipball/master ---> VERSIONE DRUPAL 5.x
+https://github.com/samuelet/Saldo-Gas6.x/zipball/master ---> VERSIONE DRUPAL 6.x
+
+Per gli sviluppatori è possibile utilizzare darcs (disponibile in tutte le maggiori distribuzioni linux, oppure scaribale
+da http://darcs.net/) oppure Git.
+
+DARCS
+Andare nella root del sito drupal (es: /var/www/html/drupal) ed eseguire:
+  darcs get --partial http://samuele.netsons.org/darcs/saldo
+in seguito eventuali aggiornamenti potranno essere importati automaticamente
+semplicemente andando all'interno della directory saldo importata precedentemente e usando il comando:
+ darcs pull
+
+GIT:
+git clone git://github.com/samuelet/Saldo-Gas.git
+
+---------------------------------------------------------------------------
+ISTRUZIONI
+---------------------------------------------------------------------------
 
 1)Scaricare il programma e scompattarlo in una directory accessibile da web 
 (per evitare problemi, nella stessa directory dove è installato Drupal):
   tar xvfz saldo.tar.gz -C /var/www/html/drupal.
-
+  
 2)Editare il file saldo.php e modificare la variabile $gas_subgroups
 (riga 13) impostando i propri sottogruppi. Es:
  $gas_subgroups=array('ms_'=>'GAS Massa','mg_'=>'GAS Montignoso');
@@ -95,3 +123,4 @@ può accedere al riepilogo degli ordini da evadere di ES
 e le credenziali di quello che accede alla lista utenti
 (http://www.economia-solidale.org/default.php?do=admin_search_users).
 Poi dal menu "Tesoriere->Importa" sarà possibile importare tali ordini e utenti da ES.
+Affinchè un utente possa accedere al proprio saldo, è necessario che si registri sul sito Drupal del Gas con la stessa email con cui è iscritto su Economia Solidale (www.economia-solidale.it).
