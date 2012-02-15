@@ -1,4 +1,5 @@
-$(document).ready(function() 
+/*$(document).ready(function() */
+Drupal.behaviors.saldo = function (context)
         { 
             $("#valid_all").click(function() 
             { 
@@ -37,7 +38,7 @@ $(document).ready(function()
 		      fgs = 1;
 		  }
 
-		  $.getJSON(Drupal.settings.saldo_script,{act: 'gas_users', filter: fgs}, function(j){
+		  $.getJSON("",{act: 'gas_users', filter: fgs}, function(j){
 		   var options = '';
 		   if ($(".select-filter-users option:first")[0].value == 0) {
 		       options += '<option value=0 >' + $(".select-filter-users option:first").html() + '</option>';
@@ -52,10 +53,10 @@ $(document).ready(function()
 		       $(".select-filter-users").html(options);
 		   }
 		   $("a#filter-edit-users").html(lnk);
-		   $("a#filter-edit-users").title(lnktn);
+		   $("a#filter-edit-users").attr("title",lnktn);
 		   $("a#filter-edit-users").next().html("("+$(".select-filter-users")[0].length+")");
 		  });
 		 return false;
               })
 	    }
-});
+};

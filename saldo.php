@@ -50,9 +50,8 @@ function saldo_main () {
   $reftitle=" - Referente (".$user_gas.")";
   $usrtitle=" - Utente (".$user_gas.")";
   drupal_add_js("saldo/script.js");
-  drupal_add_css("saldo/style.css");
-  drupal_add_css("saldo/print.css",'module','print');
-  drupal_add_js(array('saldo_script' => '?q='.$_GET['q']), 'setting');
+  drupal_add_css("saldo/style.css", "theme");
+  drupal_add_css("saldo/print.css","theme",'print');
 
   if (saldo_check_role(ROLE_ADMIN)) {
     switch ($saldo_req) {
@@ -134,7 +133,7 @@ function saldo_main () {
     case 'admuorder':
       include_once (SALDO_INC.'/admuorder.inc.php');
       drupal_set_title('Aggiungi ordine utente'.$tsrtitle);
-      $output.=drupal_get_form('uorder_import_form',TRUE);
+      $output.=drupal_get_form('uorder_import_form');
       break;
     case 'admfidpay':
       include_once (SALDO_INC.'/admfidpay.inc.php');
@@ -200,21 +199,14 @@ function saldo_main () {
       drupal_set_title('Situazione Saldo Gas'.$tsrtitle);
       $output.=drupal_get_form('admin_cash_form',FALSE);
       break;
-    case 'refuorder':
-      if ($suser->fids) {
-        include_once (SALDO_INC.'/admuorder.inc.php');
-	drupal_set_title('Aggiungi ordine utente'.$reftitle);
-	$output.=drupal_get_form('uorder_import_form');
-      }
-      break;
     }
   }
 
   if (!$output) {
     if (isset($suser->roles[ROLE_AUTH])) {
       drupal_set_title('Saldo'.$usrtitle);
-      $output .= "Questa pagina ti permette di controllare il tuo ".l("conto",$_GET['q'],array(),'act=userpaid')." economico con il <strong>".$user_gas."</strong>.<br />";
-      $output .= "Per cambiare sottogruppo, utilizza il men&ugrave; ".l("preferenze",$_GET['q'],array(),'act=userprefs').".";
+      $output .= "Questa pagina ti permette di controllare il tuo ".l("conto",$_GET['q'],array('query' => 'act=userpaid'))." economico con il <strong>".$user_gas."</strong>.<br />";
+      $output .= "Per cambiare sottogruppo, utilizza il men&ugrave; ".l("preferenze",$_GET['q'],array('query' => 'act=userprefs')).".";
       $output .= "<br /><br /><p>Tale conto si basa su questi utenti registrati attualmente con l'indirizzo di posta <strong><em>".$suser->mail."</em></strong> su <a href='http://www.economia-solidale.org'>Economia Solidale</a>:</p><ul>";
       foreach ($suser->uid as $v) {
         $output .= "<li><strong>$v</strong></li>";
@@ -276,7 +268,6 @@ function saldo_menu() {
     $mselected=array(array('reforders' => 'Gestione ordini'),
 		     'Utilit&agrave;' => array('repfucash'=>'Saldo fornitori',
 					       'fidcash'=>'Storico fornitori',
-					       'refuorder'=>'Aggiungi ordine utente',
 					       ),
 		     );
     $output_cmd.=saldo_mfieldset($mselected,"Referente");

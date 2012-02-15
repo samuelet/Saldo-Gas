@@ -360,3 +360,18 @@ function saldo_greaterDate($start_date,$end_date)
   else
     return 0;
 }
+
+function saldo_sql_import($filename, $dbprefix){
+  $file = fopen($filename, "r");
+        
+  while (!feof($file)) {
+    $data .= fread($file, filesize($filename));
+  }
+
+  fclose($file);
+        
+  $query = str_replace('{prefix}', $dbprefix, $data);
+        
+  $result = db_query($query);
+  return $result;
+}
