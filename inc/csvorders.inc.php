@@ -1,5 +1,6 @@
 <?php
-function orders_import_form() {
+function orders_import_form(&$form_state, $admin=FALSE) {
+  global $suser;
   $flag=orders_import_form_checkcsv();
 
   $form['orders_import'] = array(
@@ -10,20 +11,21 @@ function orders_import_form() {
   //Csv gia' caricato. Da importare
   if ($flag) {
     $btn='Importa';
-    $form['orders_import']['dated'] = array(
-					    '#type' => 'textfield',
-					    '#title' => 'Data default consegna ordine',
-					    '#attributes' => array('class' => 'jscalendar'),
-					    '#description' => 'Inserire giorno di consegna nel formato gg/mm/aaaa',
-					    '#jscalendar_ifFormat' => '%d/%m/%Y',
-					    '#jscalendar_showsTime' => 'false',
-					    '#size' => 10,
-					    '#maxlength' => 10,
-					    );
+	$form['orders_import']['dated'] = array(
+						'#type' => 'textfield',
+						'#title' => 'Data default consegna ordine',
+						'#attributes' => array('class' => 'jscalendar'),
+						'#description' => 'Inserire giorno di consegna nel formato gg/mm/aaaa',
+						'#jscalendar_ifFormat' => '%d/%m/%Y',
+						'#jscalendar_showsTime' => 'false',
+						'#size' => 10,
+						'#maxlength' => 10,
+						);
+	
     $form['orders_import']['override'] = array(
 					       '#type' => 'checkbox',
 					       '#title' => 'Forza aggiornamento',
-					       '#description' => 'Se non selezionata, verr&agrave; richiesta un\' ulteriore conferma nel caso nel gestionale siano gi&agrave; presenti degli ordini per la <strong>data consegna ordine</strong> impostata. Se invece &egrave selezionata, verranno sovrascritti senza ulteriore conferma gli ordini precedentemente importati ma solo se ancora aperti e non validati.',
+					       '#description' => 'Se non selezionata, verr&agrave; richiesta un\' ulteriore conferma nel caso nel gestionale siano gi&agrave; presenti degli ordini per la <strong>data consegna ordine</strong> impostata. Se invece &egrave selezionata, verranno sovrascritti senza ulteriore conferma gli ordini precedentemente importati per gli utenti selezionati, ma solo se ancora aperti e non validati.',
 					       );
     $form['orders_import']['cancel'] = array(
 					     '#type' => 'button',
@@ -32,6 +34,20 @@ function orders_import_form() {
 					     );
     $form['imported'] = array('#value' =>$flag,'#weight' => 2);
   } else {
+    if (defined('SALDO_REFCANIMPORT')) {
+		if (saldo_check_role(ROLE_TREASURER)) {
+			$fids = get_fids();
+		} else {
+			$fids = get_fids(array_keys($suser->fids));
+		}
+		$form['filter'] = array(
+							'#type' => 'select',
+							'#title' => 'Fornitore',
+							'#description' => 'Seleziona il fornitore di cui importare gli ordini.',
+							'#options' => $fids,
+							'#weight' => -1,
+							);
+	}
     //Il csv deve ancora essere caricato
     $btn='Controlla';
     $form['orders_import']['upload'] = array(
@@ -56,7 +72,7 @@ function orders_import_form() {
   
   $form['orders_import']['act']=array(
 				      '#type' => 'hidden',
-				      '#value' => 'csvorders',
+				      '#value' => ($admin) ? 'csvorders' : 'fcsvorders',
 				      );
 
   $form['orders_import']['submit'] = array(
@@ -73,6 +89,7 @@ function orders_import_form_checkcsv() {
   if ($rows=$_SESSION['orders_import_table']) {
     if (isset($rows['headers']) && isset($rows['table'])) {
       $i=0;
+	  if (!defined('SALDO_REFCANIMPORT')) {
       foreach ($rows['headers'] as $k) {
 	//Salto le prime due colonne e non aumento $i in modo che l'array date parti da 0.
 	if ($k == 'Utente' || $k == 'UserID') {
@@ -113,6 +130,7 @@ function orders_import_form_checkcsv() {
 	}
 	$adate[$k]=$datechk;
       }
+	  }
       array_unshift($rows['table'],$adate);
       $output = theme('table',$rows['headers'],$rows['table']);
     }
@@ -120,12 +138,12 @@ function orders_import_form_checkcsv() {
   return $output;
 }
 
-function orders_import_form_validate($form_id, $form_values) {
+function orders_import_form_validate($form, &$form_state) {
   $op = $_POST['op'];
   switch ($op) {
   case 'Cancella':
     unset($_SESSION['orders_import_table']);
-    drupal_goto($_GET['q'],'act=csvorders');
+    drupal_goto($_GET['q'],$form_state['values']['orders_import']['act']);
     break;
   case 'Scarica':
     if ($csvstr=get_csv()){
@@ -137,7 +155,7 @@ function orders_import_form_validate($form_id, $form_values) {
     }
   case 'Controlla':
     $rows = array();
-    if (!$file->filepath) $file = file_check_upload();
+    if (!$file->filepath) $file = file_save_upload('upload');
     if (!$file) {
       form_set_error('orders_import','Errore nel caricamento del file');
       return;
@@ -157,37 +175,63 @@ function orders_import_form_validate($form_id, $form_values) {
       array_walk($data,'_utf8_rows');
       //Agli ordini assegno chiave uguale all'header corrispondente
       if (isset($rows[0])) {
-	$rows[]=array_combine($rows[0],$data);
+		$rows[]=array_combine($rows[0],$data);
       } else {
-	//Forzo il case di alcuni valori per evitare future incompatibilità
-	$data[0] = 'Utente';
-	$data[1] = 'UserID';
-	$rows[]=$data;
+		//Forzo il case di alcuni valori per evitare future incompatibilità
+		$data[0] = 'Utente';
+		$data[1] = 'UserID';
+		$rows[]=$data;
       }
     }
     fclose($handle);
     file_delete($file->filepath);
     //Rimuovo il campo della somma totale.
     array_pop($rows);
-    //Salvo l'array che poi importero' nella sessione.
-    $_SESSION['orders_import_table']['headers']=$rows[0];
-    //Controllo se necessario inserire produttori
-    $fornitori=array();
-    $result=db_query("SELECT fnome from ".SALDO_FORNITORI.";");
-    while ($fid = db_fetch_array($result)) {
-      $fornitori[]=$fid['fnome'];;
-    }
-    array_splice($rows[0],0,2);
-    foreach ($rows[0] as $f) {
-      if (!in_array($f,$fornitori)) {
-	drupal_set_message('Il fornitore <strong><em>'.$f. "</em></strong> non esiste! Verr&agrave; importato automaticamente.<br /><strong>ATTENZIONE!</strong> Nel caso invece il fornitore abbia cambiato nome su economia solidale, &egrave FONDAMENTALE cancellare l'importazione e modificare il nome in <em>Gestione fornitori</em>.");
-	$_SESSION['orders_import_table']['fid'][]=$f;
-      }
-    }
-    //Rimuovo headers
-    array_shift($rows);
-    $_SESSION['orders_import_table']['table']=$rows;
-    drupal_set_message('Sono stati trovati ordini di <em>'.count($rows).'</em> utenti.');
+	
+	if (defined('SALDO_REFCANIMPORT')) {
+		$result=db_query("SELECT fnome FROM ".SALDO_FORNITORI." WHERE fid=".$form_state['values']['filter']);
+		if (!$fidnome=db_result($result)) {
+			form_set_error('filter','Errore interno sul fornitore. Prova a reimportare il file');
+		    unset($_SESSION['orders_import_table']);
+			return;
+		}
+		$_SESSION['orders_import_table']['headers'][0]=$rows[0][0];
+		$_SESSION['orders_import_table']['headers'][1]=$rows[0][1];
+		$_SESSION['orders_import_table']['headers'][2]=$fidnome;
+		//Rimuovo headers
+		array_shift($rows);
+		foreach($rows as $k => $fnomerow) {
+			if ($fnomerow[$fidnome]) {
+				$_SESSION['orders_import_table']['table'][$k]['Utente']=$rows[$k]['Utente'];
+				$_SESSION['orders_import_table']['table'][$k]['UserID']=$rows[$k]['UserID'];
+				$_SESSION['orders_import_table']['table'][$k][$fidnome]=$fnomerow[$fidnome];
+			}
+		}
+	} else {
+		//Salvo l'array che poi importero' nella sessione.
+		$_SESSION['orders_import_table']['headers']=$rows[0];
+		//Controllo se necessario inserire produttori
+		$fornitori=array();
+		$result=db_query("SELECT fnome from ".SALDO_FORNITORI.";");
+		while ($fid = db_fetch_array($result)) {
+		$fornitori[]=$fid['fnome'];;
+		}
+		array_splice($rows[0],0,2);
+		foreach ($rows[0] as $f) {
+			if (!in_array($f,$fornitori)) {
+				drupal_set_message('Il fornitore <strong><em>'.$f. "</em></strong> non esiste! Verr&agrave; importato automaticamente.<br /><strong>ATTENZIONE!</strong> Nel caso invece il fornitore abbia cambiato nome su economia solidale, &egrave FONDAMENTALE cancellare l'importazione e modificare il nome in <em>Gestione fornitori</em>.");
+				$_SESSION['orders_import_table']['fid'][]=$f;
+			}
+		}
+		//Rimuovo headers
+		array_shift($rows);
+		$_SESSION['orders_import_table']['table']=$rows;
+	}
+	if (count($_SESSION['orders_import_table']['table']) == 0) {
+		drupal_set_message('Al momento non ci sono ordini da importare'.(($fidnome) ? ' per il produttore "'.$fidnome.'".' : '.'));
+	} else {
+		drupal_set_message('Sono stati trovati ordini di <em>'.count($_SESSION['orders_import_table']['table']).'</em> utenti'.(($fidnome) ? ' per il produttore "'.$fidnome.'".' : '.'));
+	}
     unset($rows);
     break;
   case 'Importa':
@@ -196,7 +240,7 @@ function orders_import_form_validate($form_id, $form_values) {
     if (!is_array($mycsv)) {
       form_set_error('orders_import][upload','Errore interno. Prova a reimportare il file');
       unset($_SESSION['orders_import_table']);
-      drupal_goto($_GET['q'],'act=csvorders');
+      drupal_goto($_GET['q'],$form_state['values']['act']);
       return;
     }
     //Ottengo lista utenti esistenti
@@ -234,7 +278,7 @@ function orders_import_form_validate($form_id, $form_values) {
 	  while ($oids= db_fetch_array($result)) {
 	    //Controllo che non esistano ordini gia' importati per le date di consegna impostate
 	    if (!$_POST['override']) {
-	      form_set_error('date'.$k,"Esiste gi&agrave; un ordine al fornitore <em>".$fkey."</em> per la data ".datemysql($cst_date[$k],"-","/").". Se vuoi sovrascriverlo, seleziona l'opzione <strong>Forza aggiornamento</strong>.");
+	      form_set_error('date'.$k,"Esiste gi&agrave; un ordine al fornitore <em>".$fkey."</em> per la data ".datemysql($cst_date[$k],"-","/").". Se vuoi sovrascriverlo, seleziona l'opzione <strong>Forza aggiornamento</strong>.<br />ATTENZIONE: verranno sovrascritti SOLO gli ordini degli utenti visualizzati nella tabella sottostante, eventuali ordini di altri utenti precedentemente importati per questo fornitore rimmarrano invariati.");
 	    }
 	    //Controllo lock e validate.
 	    if ($oids['olock'] || $oids['ovalid']) {
@@ -256,7 +300,7 @@ function orders_import_form_validate($form_id, $form_values) {
   }
 }
 
-function orders_import_form_submit($form_id, $form_values) {
+function orders_import_form_submit($form, &$form_state) {
   global $suser;
   $op=$_POST['op'];
   if ($op=='Importa') {
@@ -268,9 +312,9 @@ function orders_import_form_submit($form_id, $form_values) {
       foreach ($mycsv['fid'] as $fid) {
 	$query .= "('".addcslashes($fid,"'")."'),";
       }
-      $query = rtrim($query,',')." ON DUPLICATE KEY UPDATE fnome=VALUES(fnome);";
+      $query = rtrim($query,',')."ON DUPLICATE KEY UPDATE fnome=VALUES(fnome);";
       if (db_query($query)) {
-	drupal_set_message("Sono stati importati <em>".db_affected_rows()."</em> fornitori. Ricordati di impostare i loro ".l('referenti',$_GET['q'],array(),'act=admfids'));
+	drupal_set_message("Sono stati importati <em>".db_affected_rows()."</em> fornitori. Ricordati di impostare i loro ".l('referenti',$_GET['q'],array('query' => 'act=admfids')));
 	foreach ($mycsv['fid'] as $fid) {
 	  log_gas("Tesoriere: Importazione fornitore","NULL",addcslashes($fid,"'"));
 	}
@@ -289,7 +333,7 @@ function orders_import_form_submit($form_id, $form_values) {
 	  $query="INSERT INTO ".SALDO_ORDINI." (odata,ouid,ofid,osaldo,lastduid) VALUES ";
 	  $query.="('".datemysql($date)."',".$ordine['UserID'].",";
 	  $query.="(SELECT fid FROM ".SALDO_FORNITORI." where fnome='".addcslashes($fid,"'")."'),";
-	  $query.=str_replace(",",".",$ordine[$fid]).",".$suser->duid.") ON DUPLICATE KEY UPDATE osaldo=VALUES(osaldo),lastduid=VALUES(lastduid),otime=NOW();";
+	  $query.=str_replace(",",".",preg_replace('/[^0-9\,\.]/','',$ordine[$fid])).",".$suser->duid.") ON DUPLICATE KEY UPDATE osaldo=VALUES(osaldo),lastduid=VALUES(lastduid),otime=NOW();";
 	  if (db_query($query)) {
 	    if ($r_aff=db_affected_rows() > 0) {
 	      $dtslog[$date][]=addcslashes($fid,"'");

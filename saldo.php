@@ -33,7 +33,7 @@ get_user_refers($suser);
 get_user_roles($suser);
 
 if (is_array($_SESSION['orders_import_table'])) {
-  $saldo_req='csvorders';
+  $saldo_req=(defined('SALDO_REFCANIMPORT')) ? 'fcsvorders' : 'csvorders';
  } elseif (is_array($_SESSION['users_import_table'])) {
    $saldo_req='csvusers';
    } elseif (is_array($_SESSION['pay_import_table'])) {
@@ -81,9 +81,10 @@ function saldo_main () {
       exit;
       break;
     case 'csvorders':
+	case 'fcsvorders':
       include_once (SALDO_INC.'/csvorders.inc.php');
       drupal_set_title('Importa Punto Consegna'.$tsrtitle);
-      $output.=drupal_get_form('orders_import_form');
+      $output.=drupal_get_form('orders_import_form',TRUE);
       break;
     case 'csvusers':
       include_once (SALDO_INC.'/csvusers.inc.php');
@@ -182,6 +183,13 @@ function saldo_main () {
 	$output.=drupal_get_form('user_paid_form');
       }
       break;
+	case 'fcsvorders':
+	if (defined('SALDO_REFCANIMPORT') && $suser->fids) {
+      include_once (SALDO_INC.'/csvorders.inc.php');
+      drupal_set_title('Importa Punto Consegna fornitore'.$tsrtitle);
+      $output.=drupal_get_form('orders_import_form');
+	}
+      break;
     case 'reforders':
       if ($suser->fids) {
 	include_once (SALDO_INC.'/reforders.inc.php');
@@ -265,7 +273,7 @@ function saldo_menu() {
   }
 
   if ($suser->fids) {
-    $mselected=array(array('reforders' => 'Gestione ordini'),
+    $mselected=array(array('reforders' => 'Gestione ordini','fcsvorders' => 'Importa punto consegna'),
 		     'Utilit&agrave;' => array('repfucash'=>'Saldo fornitori',
 					       'fidcash'=>'Storico fornitori',
 					       ),
