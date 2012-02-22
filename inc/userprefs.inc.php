@@ -34,15 +34,15 @@ function user_prefs_form() {
   return $form;
 }
 
-function user_prefs_form_validate($form_id, $form_values) {
+function user_prefs_form_validate($form, &$form_state) {
 }
 
-function user_prefs_form_submit($form_id, $form_values) {
+function user_prefs_form_submit($form, &$form_state) {
   global $suser;
   unset($_SESSION['saldo_user']);
-  $_SESSION['saldo_prefix']=$form_values['gas'];
-  if ($form_values['save_pref']){
-    $query="UPDATE ".SALDO_UTENTI." set ugroup='".$form_values['gas']."' WHERE uid in (".implode(",",array_keys($suser->uid)).")";
+  $_SESSION['saldo_prefix']=$form_state['values']['gas'];
+  if ($form_state['values']['save_pref']){
+    $query="UPDATE ".SALDO_UTENTI." set ugroup='".$form_state['values']['gas']."' WHERE uid in (".implode(",",array_keys($suser->uid)).")";
     if (!$result=db_query($query)) {
       drupal_set_message('Errore connessione database. Le preferenze non sono state salvate','error');
     } else {

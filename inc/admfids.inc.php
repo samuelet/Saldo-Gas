@@ -27,11 +27,11 @@ function _admin_fids() {
 	$ofid['unome'].="<div class='saldo_note'>".l("Profilo","user/".$ofid['uid'])." ".l("Contatta","user/".$ofid['uid']."/contact")."</div>";
       }
       unset($ofid['uid']);
-      $ofid['fid']=l('Modifica',$_GET['q'],array(),'act=admfids&fid='.$ofid['fid']);
+      $ofid['fid']=l('Modifica',$_GET['q'],array('query' => 'act=admfids&fid='.$ofid['fid']));
       $list[]=$ofid;
     }
     if (count($list) == 0) {
-      drupal_set_message("Nessun fornitore presente! I fornitori vengono importati automaticamente quando si importa un nuovo ".l('punto consegna',$_GET['q'],array(),'act=csvorders'));
+      drupal_set_message("Nessun fornitore presente! I fornitori vengono importati automaticamente quando si importa un nuovo ".l('punto consegna',$_GET['q'],array('query' => 'act=csvorders')));
     } else {
       $headers = array(
 		       array('data' => 'Fornitore'),
@@ -45,7 +45,7 @@ function _admin_fids() {
   return $out;
   }
 
-function admin_fids_form($id) {
+function admin_fids_form(&$form_state, $id) {
   $form['#redirect']=FALSE;
   $form['fid'] = array(
 		       '#type' => 'fieldset',
@@ -98,27 +98,26 @@ function admin_fids_form($id) {
 				 '#type' => 'button',
 				 '#value' => 'Annulla',
 				 );
-  
   return $form;
 }
 
-function admin_fids_form_validate($form_id, $form_values) {
+function admin_fids_form_validate($form, &$form_state) {
   if ($_POST['op']=='Annulla') {
     drupal_set_message('Modifica fornitore annullata');
     drupal_goto($_GET['q'],'act=admfids');
   }
-  if (!is_numeric($form_values['fid']) || !is_numeric($form_values['refer'])) {
+  if (!is_numeric($form_state['values']['fid']) || !is_numeric($form_state['values']['refer'])) {
     form_set_error('Identificatore fornitore non valido!');
   }
 }
 
-function admin_fids_form_submit($form_id, $form_values) {
+function admin_fids_form_submit($form, &$form_state) {
   $ok=true;
-  $lfid=implode(",",get_fids(array($form_values['fid'])));
-  $query='UPDATE '.SALDO_FORNITORI.' SET frefer='.$form_values['refer'].",fnome='".addcslashes($form_values['name'],"'")."' WHERE fid=".$form_values['fid'];
+  $lfid=implode(",",get_fids(array($form_state['values']['fid'])));
+  $query='UPDATE '.SALDO_FORNITORI.' SET frefer='.$form_state['values']['refer'].",fnome='".addcslashes($form_state['values']['name'],"'")."' WHERE fid=".$form_state['values']['fid'];
   if (db_query($query)) {
-    $msg='Il produttore <em>'.$form_values['name'].'</em> ';
-    if ($form_values['refer'] > 0) {
+    $msg='Il produttore <em>'.$form_state['values']['name'].'</em> ';
+    if ($form_state['values']['refer'] > 0) {
       $msg .= "ha un nuovo referente principale. Questo referente pu&ograve; modificare e validare gli ordini del proprio produttore.";
     } else {
       $msg .= "non ha nessun referente.";
@@ -130,17 +129,17 @@ function admin_fids_form_submit($form_id, $form_values) {
     $ok=false;
   }
 
-  $query="DELETE FROM ".SALDO_SUBREFERS." WHERE rfid=".$form_values['fid'];
+  $query="DELETE FROM ".SALDO_SUBREFERS." WHERE rfid=".$form_state['values']['fid'];
   if (db_query($query)) {
-    if (count($form_values['subrefers'])>0) {
+    if (count($form_state['values']['subrefers'])>0) {
       $qruid="";
-      foreach ($form_values['subrefers'] as $ruid) {
-	$qruid.="(".$ruid.",".$form_values['fid']."),";
+      foreach ($form_state['values']['subrefers'] as $ruid) {
+	$qruid.="(".$ruid.",".$form_state['values']['fid']."),";
       }
       $query="INSERT INTO ".SALDO_SUBREFERS." (ruid,rfid) VALUES ".$qruid=rtrim($qruid,",");
       if (db_query($query)) {
-	$msg='Il produttore <em>'.$form_values['name'].'</em> ';
-	$msg .= "ha ".count($form_values['subrefers'])." referenti secondari. Questi referenti possono modificare e validare gli ordini del proprio produttore.";
+	$msg='Il produttore <em>'.$form_state['values']['name'].'</em> ';
+	$msg .= "ha ".count($form_state['values']['subrefers'])." referenti secondari. Questi referenti possono modificare e validare gli ordini del proprio produttore.";
 	drupal_set_message($msg);
 	log_gas("Tesoriere: Impostazione referenti secondari",'NULL',$lfid);
       } else {

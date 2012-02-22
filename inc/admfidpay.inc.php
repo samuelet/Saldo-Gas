@@ -44,24 +44,24 @@ function admfidpay_import_form() {
   
   }
 
-function admfidpay_import_form_validate($form_id, $form_values) {
-  if (!is_numeric($form_values['saldo']) || $form_values['saldo']<0 || $form_values['saldo']>=10000) {
-    form_set_error('saldo',$form_values['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
+function admfidpay_import_form_validate($form, &$form_state) {
+  if (!is_numeric($form_state['values']['saldo']) || $form_state['values']['saldo']<0 || $form_state['values']['saldo']>=10000) {
+    form_set_error('saldo',$form_state['values']['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
   }
-  if (!is_numeric($form_values['fid']) || $form_values['fid']<1) {
+  if (!is_numeric($form_state['values']['fid']) || $form_state['values']['fid']<1) {
     form_set_error('user',"Seleziona un fornitore!");
   }
 }
 
-function admfidpay_import_form_submit($form_id, $form_values) {
+function admfidpay_import_form_submit($form, &$form_state) {
   global $suser;
-  $query="INSERT INTO ".SALDO_FIDPAGAMENTO." (fpfid,fpsaldo,fplastduid,fpnote) VALUES (".$form_values['fid'].",".$form_values['saldo'].",".$suser->duid.",'".check_plain($form_values['note'])."');";
+  $query="INSERT INTO ".SALDO_FIDPAGAMENTO." (fpfid,fpsaldo,fplastduid,fpnote) VALUES (".$form_state['values']['fid'].",".$form_state['values']['saldo'].",".$suser->duid.",'".check_plain($form_state['values']['note'])."');";
   if (db_query($query)) {
-    $fids=implode(",",get_fids(array($form_values['fid'])));
-    drupal_set_message("Inserito pagamento di ".$form_values['saldo']." Euro al fornitore ".$fids);
+    $fids=implode(",",get_fids(array($form_state['values']['fid'])));
+    drupal_set_message("Inserito pagamento di ".$form_state['values']['saldo']." Euro al fornitore ".$fids);
     log_gas("Tesoriere: Pagamento fornitore","NULL",$fids);
   } else {
-    drupal_set_message("Errore inserimento pagamento di ".$form_values['saldo']." Euro al fornitore ".implode(",",get_fids(array($form_values['fid']))),'error');
+    drupal_set_message("Errore inserimento pagamento di ".$form_state['values']['saldo']." Euro al fornitore ".implode(",",get_fids(array($form_state['values']['fid']))),'error');
   }
   drupal_goto($_GET['q'],'act=admfidpay');
 }

@@ -1,5 +1,5 @@
 <?php
-function admin_cash_form($admin) {
+function admin_cash_form(&$form_state, $admin) {
   $type=check_plain($_GET['type']);
   $ok=check_plain($_POST['ok']);
   $form['#redirect'] = FALSE;
@@ -9,28 +9,25 @@ function admin_cash_form($admin) {
 			    '#title' => 'Storico',
 			    '#collapsible' => true,
 			    );
+    $form['search']['date_desc'] = array('#value' => '<div class="description">Inserire la data iniziale e facoltativamente quella finale del periodo cui si vuole  visualizzare i movimenti. Formato gg/mm/aaaa</div>');
+    $datetype = 'textfield';
+    if (module_exists('date_popup')) {
+      $datetype = 'date_popup';
+    }
     $form['search']['sdate'] = array(
-				   '#type' => 'textfield',
+				   '#type' => $datetype,
 				   '#title' => 'Data Inizio',
-				   '#attributes' => array('class' => 'jscalendar'),
-				   '#jscalendar_ifFormat' => '%d/%m/%Y',
-				   '#jscalendar_showsTime' => 'false',
+				   '#date_format' => 'd/m/Y',
 				   '#size' => 10,
-				   '#maxlength' => 10,
-				   '#prefix' => '<span class="container-inline">',
-				   '#suffix' => '<div>/</div>',
+				   //'#maxlength' => 10,
 				   );
     $form['search']['edate'] = array(
-				   '#type' => 'textfield',
+				   '#type' => $datetype,
 				   '#title' => 'Data Fine',
-				   '#attributes' => array('class' => 'jscalendar'),
-				   '#jscalendar_ifFormat' => '%d/%m/%Y',
-				   '#jscalendar_showsTime' => 'false',
+				   '#date_format' => 'd/m/Y',
 				   '#size' => 10,
-				   '#maxlength' => 10,
-				   '#suffix' => '</span>',
+				   //'#maxlength' => 10,
 				   );
-    $form['search']['date_desc'] = array('#value' => '<div class="description">Inserire la data iniziale e facoltativamente quella finale del periodo cui si vuole  visualizzare i movimenti. Formato gg/mm/aaaa</div>');
     
     $form['search']['details'] = array('#type' => 'checkbox',
 				       '#title' => 'Dettagli',
@@ -129,11 +126,17 @@ function _paid_list($admin,$users) {
     $msg .= "dell' utente <em>".$users[$wuser]."</em> ";
   }
 
-  if (!$sdate=datevalid($_POST['sdate'])) {
+  $sdate = $_POST['sdate'];
+  $edate = $_POST['edate'];
+  if (module_exists('date_popup')) {
+    $sdate = $sdate['date'];
+    $edate = $edate['date'];
+  }
+  if (!$sdate=datevalid($sdate)) {
     $sdate=date('Y-m-d', strtotime("-7 days"));
   }
   $msg.="dal ".datemysql($sdate,"-","/");
-  if ($edate=datevalid($_POST['edate'])) {
+  if ($edate=datevalid($edate)) {
     if (saldo_greaterDate($sdate,$edate)) {
       form_set_error('edate','La data di fine periodo non deve essere anteriore a quella di inizio periodo.');
       return "";
@@ -621,7 +624,7 @@ function admin_cash_list($type,$date,$id,$fid,$del=false) {
 	$out .= (($llextra) ? " per  ". $llextra : "")."</em> avvenuta con successo!";
       } else {
 	$out="";
-	drupal_set_message("Non &egrave stato trovato nessun movimento di cassa eliminabile. Nel caso si abbia selezioniato degli ordini, prima di eliminarli, controllare che non siano validati ed eventualmente ".l('sbloccarli',$_GET['q'],array(),'act=admorders').".",'error');
+	drupal_set_message("Non &egrave stato trovato nessun movimento di cassa eliminabile. Nel caso si abbia selezioniato degli ordini, prima di eliminarli, controllare che non siano validati ed eventualmente ".l('sbloccarli',$_GET['q'],array('query' => 'act=admorders')).".",'error');
       }
     }
   } else {

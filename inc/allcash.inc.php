@@ -22,7 +22,7 @@ function all_cash_form() {
   $form['allcashr']['submit'] = array(
 					 '#type' => 'submit',
 					 '#value' => 'Invia',
-					 );  
+					 );
 
   $aquery['Ordine Utente']="SELECT IFNULL(SUM(osaldo),0) as fpsaldo FROM ".SALDO_ORDINI;
   $aquery['Versamento Utente']="SELECT IFNULL(SUM(vsaldo),0) as vssaldo FROM ".SALDO_VERSAMENTI;
@@ -31,7 +31,7 @@ function all_cash_form() {
   $aquery['Spesa Gas']="SELECT IFNULL(SUM(ssaldo),0) as gesaldo FROM ".SALDO_DEBITO_CREDITO." WHERE stype=2";
   $aquery['Debito Utente']="SELECT IFNULL(SUM(ssaldo),0) as udsaldo FROM ".SALDO_DEBITO_CREDITO." WHERE stype=0";
   $aquery['Credito Utente']="SELECT IFNULL(SUM(ssaldo),0) as ucsaldo FROM ".SALDO_DEBITO_CREDITO." WHERE stype=1";
-
+  
   if ($_POST['datemr']) {
      if ($datemr=datevalid($_POST['datemr'])) {
      	$aquery['Ordine Utente'] .= " WHERE odata <= '".$datemr."'";
@@ -46,7 +46,7 @@ function all_cash_form() {
      	form_set_error('datemr','Data non valida');
      }
   }
-
+  
   foreach ($aquery as $h=>$query) {
     $headers[]=$h;
     $r=db_result(db_query($query));
@@ -59,13 +59,13 @@ function all_cash_form() {
   $asaldo['Salva Resti']= $asaldo["Credito Utente"] + $asaldo["Versamento Utente"] - $asaldo["Debito Utente"] - $asaldo["Ordine Utente"];
   $asaldo['Fondo Spese'] = $asaldo["Saldo Fornitori"] + $asaldo["Saldo Cassa"] - $asaldo["Salva Resti"];
 
-  $main[] = array("<strong>Saldo Fornitori</strong>","=","Pagamento Fornitore - Ordine Utente",$asaldo['Saldo Fornitori']);
-  $main[] = array("<strong>Saldo Cassa</strong>","=","Versamento Utente - Pagamento Fornitore - Spesa Gas + Entrata Gas","<strong>".$asaldo['Saldo Cassa']."</strong>");
-  $main[] = array("<strong>Salva Resti</strong>","=","Credito Utente + Versamento Utente - Debito Utente - Ordine Utente",$asaldo['Salva Resti']);
-  $main[] = array("<strong>Fondo Spese</strong>","=","Saldo Fornitori + Saldo Cassa - Salva Resti","<strong>".$asaldo['Fondo Spese']."<strong/>");
-  $out.=theme('table',array(),$main);
-
+  $main[] = array("data" => array("<strong>Saldo Fornitori</strong>","=","Pagamento Fornitore - Ordine Utente",$asaldo['Saldo Fornitori']));
+  $main[] = array("data" => array("<strong>Saldo Cassa</strong>","=","Versamento Utente - Pagamento Fornitore - Spesa Gas + Entrata Gas","<strong>".$asaldo['Saldo Cassa']."</strong>"));
+  $main[] = array("data" => array("<strong>Salva Resti</strong>","=","Credito Utente + Versamento Utente - Debito Utente - Ordine Utente",$asaldo['Salva Resti']));
+  $main[] = array("data" => array("<strong>Fondo Spese</strong>","=","Saldo Fornitori + Saldo Cassa - Salva Resti","<strong>".$asaldo['Fondo Spese']."<strong/>"));
+  $out .= theme('table', array(), $main);
+  
   $form['allcash']['result'] = array('#value' =>$out);
-
+  
   return $form;
 }

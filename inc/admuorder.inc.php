@@ -1,20 +1,13 @@
 <?php
-function uorder_import_form($admin=FALSE) {
-  global $suser;
-  if ($admin) {
-    $fids = get_fids();
-  } else {
-    $fids = get_fids(array_keys($suser->fids));
-  }
+function uorder_import_form() {
+  $fids=get_fids();
   $users=get_users();
-  if ($admin) {
-      $form['help'] = array('#type' => 'fieldset',
-    			'#title' => 'Aiuto',
-    			'#collapsible'=>true,
-    			'#collapsed'=>true,
-    			'#value' => "<div>L' Ordine Utente influisce in modo immediato sul salvaresti del gasato.</div>",
-    			);
-  }
+  $form['help'] = array('#type' => 'fieldset',
+			'#title' => 'Aiuto',
+			'#collapsible'=>true,
+			'#collapsed'=>true,
+			'#value' => "<div>L' Ordine Utente influisce in modo immediato sul salvaresti del gasato.</div>",
+			);
 
   $form['pay'] = array(
 				'#type' => 'fieldset',
@@ -55,37 +48,37 @@ function uorder_import_form($admin=FALSE) {
   
   }
 
-function uorder_import_form_validate($form_id, $form_values) {
-  if (!is_numeric($form_values['saldo']) || $form_values['saldo']<0 || $form_values['saldo']>=10000) {
-    form_set_error('saldo',$form_values['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
+function uorder_import_form_validate($form, &$form_state) {
+  if (!is_numeric($form_state['values']['saldo']) || $form_state['values']['saldo']<0 || $form_state['values']['saldo']>=10000) {
+    form_set_error('saldo',$form_state['values']['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
   }
-  if (!is_numeric($form_values['fid']) || $form_values['fid']<1) {
+  if (!is_numeric($form_state['values']['fid']) || $form_state['values']['fid']<1) {
     form_set_error('fid',"Seleziona un fornitore!");
   }
-  if (!is_numeric($form_values['user']) || $form_values['user']<1) {
+  if (!is_numeric($form_state['values']['user']) || $form_state['values']['user']<1) {
     form_set_error('user',"Seleziona un utente!");
   }
-  if (!($form_values['date'])) {
+  if (!($form_state['values']['date'])) {
     form_set_error('date',"Nessun ordine aperto. Non &egrave possibile inserire ordini.");
   }
 }
 
-function uorder_import_form_submit($form_id, $form_values) {
+function uorder_import_form_submit($form, &$form_state) {
   global $suser;
-  $luser=implode(",",get_users($form_values['user']));
-  $msg="La spesa ordine di ".$form_values['saldo']." Euro in data ".datemysql($form_values['date'],"-","/")." all'utente ".$luser." per il fornitore ".implode(",",get_fids(array($form_values['fid'])));
-  $vexist=db_fetch_object(db_query("SELECT * FROM ".SALDO_ORDINI." WHERE odata='".$form_values['date']."' AND ouid=".$form_values['user']." AND ofid=".$form_values['fid']));
+  $luser=implode(",",get_users($form_state['values']['user']));
+  $msg="La spesa ordine di ".$form_state['values']['saldo']." Euro in data ".datemysql($form_state['values']['date'],"-","/")." all'utente ".$luser." per il fornitore ".implode(",",get_fids(array($form_state['values']['fid'])));
+  $vexist=db_fetch_object(db_query("SELECT * FROM ".SALDO_ORDINI." WHERE odata='".$form_state['values']['date']."' AND ouid=".$form_state['values']['user']." AND ofid=".$form_state['values']['fid']));
   if ($vexist) {
-    drupal_set_message($msg. " non &egrave; stata inserita perch&egrave esiste gi&agrave; tale ordine con un importo di ".$vexist->osaldo." Euro. Per modificarlo, devi andare nella ".l('gestione ordini.',$_GET['q'],array(),'act='.(($_GET['act'] == "admuorder") ? 'admorders' : 'reforders').'&date='.$form_values['date'].'&op=Cerca'),'error');
+    drupal_set_message($msg. " non &egrave; stata inserita perch&egrave esiste gi&agrave; tale ordine con un importo di ".$vexist->osaldo." Euro. Se vuoi modificarlo, devi utilizzare la ".l('Gestione ordini globale',$_GET['q'],array('query' => 'act=admorders&date='.$form_state['values']['date'].'&op=Cerca')),'error');
   } else {
     $query="INSERT INTO ".SALDO_ORDINI." (odata,ouid,ofid,osaldo,lastduid) VALUES ";
-    $query .= "('".$form_values['date']."',".$form_values['user'].",".$form_values['fid'].",".$form_values['saldo'].",".$suser->duid.");";
+    $query .= "('".$form_state['values']['date']."',".$form_state['values']['user'].",".$form_state['values']['fid'].",".$form_state['values']['saldo'].",".$suser->duid.");";
     if (db_query($query)) {
       drupal_set_message($msg." &egrave; stata inserita correttamente");
-      log_gas((($_GET['act'] == "admuorder") ? "Tesoriere" : "Referente").": Aggiunta ordine utente",$form_values['date'],$luser);
+      log_gas("Tesoriere: Aggiunta ordine utente",$form_state['values']['date'],$luser);
     } else {
       drupal_set_message($msg." non &egrave stata inserita a causa di un errore interno",'error');
     }
   }
-  drupal_goto($_GET['q'],'act='.$_GET['act']);
+  drupal_goto($_GET['q'],'act=admuorder');
 }

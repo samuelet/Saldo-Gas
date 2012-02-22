@@ -2,7 +2,7 @@
 function ref_orders_form() {
   global $suser;
   $form['#redirect'] = FALSE;
-  $form['description'] = array('#value' => 'In questa pagina puoi gestire gli ordini che non sono ancora stati validati o chiusi dal tesoriere. Gli altri ordini possono essere controllati nello '. l('storico fornitore',$_GET['q'],array(),'act=fidcash').'.');
+  $form['description'] = array('#value' => 'In questa pagina puoi gestire gli ordini che non sono ancora stati validati o chiusi dal tesoriere. Gli altri ordini possono essere controllati nello '. l('storico fornitore',$_GET['q'],array('query' => 'act=fidcash')).'.');
   $form['ref_orders'] = array(
 				'#type' => 'fieldset',
 				'#title' => 'Gestisci ordini',
@@ -57,7 +57,7 @@ function ref_orders_form() {
   return $form;
   }
 
-function ref_orders_form_validate($form_id, $form_values) {
+function ref_orders_form_validate($form, &$form_state) {
   $asaldo=$_POST['saldo'];
   if (is_array($asaldo)) {
     foreach ($asaldo as $saldo) {
@@ -68,10 +68,10 @@ function ref_orders_form_validate($form_id, $form_values) {
   }
 }
 
-function ref_orders_form_submit($form_id, $form_values) {
+function ref_orders_form_submit($form, &$form_state) {
   global $suser;
   $aff_rows=0;
-  if ($form_values['op'] == 'Aggiorna' || $form_values['ordact']) {
+  if ($form_state['values']['op'] == 'Aggiorna' || $form_state['values']['ordact']) {
     if (!is_array($asaldo=$_POST['saldo'])) {
       return "";
     }
@@ -82,7 +82,7 @@ function ref_orders_form_submit($form_id, $form_values) {
       $validv=check_plain($validv);
       $query="UPDATE ".SALDO_ORDINI." set osaldo=".$saldo.",ovalid=".$validv.",lastduid=".$suser->duid.",otime=NOW()";
       $query .=" WHERE oid=".$k." AND olock=0 AND ofid IN (".implode(',',array_keys($suser->fids)).")";
-      $query .= " AND (osaldo<>".$saldo." OR ovalid<>".$validv.") AND odata='".$form_values['date']."'";
+      $query .= " AND (osaldo<>".$saldo." OR ovalid<>".$validv.") AND odata='".$form_state['values']['date']."'";
       if ($result=db_query($query)) {
 	$aff_rows+=db_affected_rows();
 	$ok=true;
@@ -92,7 +92,7 @@ function ref_orders_form_submit($form_id, $form_values) {
     }
     if ($ok) {
       if ($aff_rows > 0) {
-	log_gas("Referente: Aggiornamento ordini",$form_values['date']);
+	log_gas("Referente: Aggiornamento ordini",$form_state['values']['date']);
       }
       drupal_set_message("Aggiornati <em>".$aff_rows."</em> ordini");
     }

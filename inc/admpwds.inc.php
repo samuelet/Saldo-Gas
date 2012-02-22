@@ -39,16 +39,16 @@ function pwds_adm_form() {
   return $form;
   }
 
-function pwds_adm_form_submit($form_id, $form_values) {
+function pwds_adm_form_submit($form, &$form_state) {
   $query = "INSERT INTO ".SALDO_PWD." (ptype,puser,ppwd) VALUES ";
   $addquery=FALSE;
   $logextra=array();
-  if (!empty($form_values['opuser']) && !empty($form_values['opassword'])) {
-    $addquery="(1,'".$form_values['opuser']."','".$form_values['opassword']."'),";
+  if (!empty($form_state['values']['opuser']) && !empty($form_state['values']['opassword'])) {
+    $addquery="(1,'".$form_state['values']['opuser']."','".$form_state['values']['opassword']."'),";
     $logextra[]="ordini";
   }
-  if (!empty($form_values['upuser']) && !empty($form_values['upassword'])) {
-    $addquery.="(2,'".$form_values['upuser']."','".$form_values['upassword']."')";
+  if (!empty($form_state['values']['upuser']) && !empty($form_state['values']['upassword'])) {
+    $addquery.="(2,'".$form_state['values']['upuser']."','".$form_state['values']['upassword']."')";
     $logextra[]="utenti";
   }
   if ($addquery) {

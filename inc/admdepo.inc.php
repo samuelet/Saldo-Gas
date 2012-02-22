@@ -39,25 +39,25 @@ function admdepo_import_form() {
   
   }
 
-function admdepo_import_form_validate($form_id, $form_values) {
-  if (!is_numeric($form_values['saldo']) || $form_values['saldo']<0 || $form_values['saldo']>=10000) {
-    form_set_error('saldo',$form_values['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
+function admdepo_import_form_validate($form, &$form_state) {
+  if (!is_numeric($form_state['values']['saldo']) || $form_state['values']['saldo']<0 || $form_state['values']['saldo']>=10000) {
+    form_set_error('saldo',$form_state['values']['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
   }
 
-  if (!is_numeric($form_values['user']) || $form_values['user']<1) {
+  if (!is_numeric($form_state['values']['user']) || $form_state['values']['user']<1) {
     form_set_error('user',"Seleziona un utente!");
   }
 }
 
-function admdepo_import_form_submit($form_id, $form_values) {
+function admdepo_import_form_submit($form, &$form_state) {
   global $suser;
-  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid) VALUES (".$form_values['user'].",".$form_values['saldo'].",".$suser->duid.");";
+  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid) VALUES (".$form_state['values']['user'].",".$form_state['values']['saldo'].",".$suser->duid.");";
   if (db_query($query)) {
-    $luser=implode("",get_users($form_values['user']));
-    drupal_set_message("Inserito versamento di ".$form_values['saldo']." Euro per l'utente ".$luser);
+    $luser=implode("",get_users($form_state['values']['user']));
+    drupal_set_message("Inserito versamento di ".$form_state['values']['saldo']." Euro per l'utente ".$luser);
     log_gas("Tesoriere: Inserito Versamento utente",'NULL',$luser);
   } else {
-    drupal_set_message("Errore inserimento versamento di ".$form_values['saldo']." Euro per l'utente ".implode("",get_users($form_values['user'])),'error');
+    drupal_set_message("Errore inserimento versamento di ".$form_state['values']['saldo']." Euro per l'utente ".implode("",get_users($form_state['values']['user'])),'error');
   }
   drupal_goto($_GET['q'],'act=admdepo');
 }

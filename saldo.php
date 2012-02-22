@@ -34,11 +34,13 @@ get_user_roles($suser);
 
 if (is_array($_SESSION['orders_import_table'])) {
   $saldo_req=(defined('SALDO_REFCANIMPORT')) ? 'fcsvorders' : 'csvorders';
- } elseif (is_array($_SESSION['users_import_table'])) {
+} elseif (is_array($_SESSION['users_import_table'])) {
    $saldo_req='csvusers';
-   } elseif (is_array($_SESSION['pay_import_table'])) {
+} elseif (is_array($_SESSION['pay_import_table'])) {
      $saldo_req='csvpay';
-     } else {
+} elseif (is_array($_SESSION['fids_import_table']['fids'])) {
+  $saldo_req= 'csvfids';
+} else {
   $saldo_req=$_REQUEST['act'];
 }
 
@@ -90,6 +92,13 @@ function saldo_main () {
       include_once (SALDO_INC.'/csvusers.inc.php');
       drupal_set_title('Importa Utenti'.$tsrtitle);
       $output.=drupal_get_form('users_import_form');
+      break;
+	case 'csvfids':
+	  if (defined('SALDO_REFCANIMPORT')) {
+		include_once (SALDO_INC.'/csvfids.inc.php');
+		drupal_set_title('Importa Fornitori'.$tsrtitle);
+		$output.=drupal_get_form('fids_import_form');
+	  }
       break;
     case 'csvpay':
       include_once (SALDO_INC.'/csvpay.inc.php');
@@ -260,6 +269,7 @@ function saldo_menu() {
 					'csvusers'=>'Importa utenti',
 					),
 		     );
+	if (defined('SALDO_REFCANIMPORT')) $mselected['Importa']+=array('csvfids'=>'Importa Fornitori');
     $output_cmd.=saldo_mfieldset($mselected,"Tesoriere");    
   }
 

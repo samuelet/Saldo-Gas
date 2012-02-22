@@ -1,5 +1,5 @@
 <?php
-function rep_fcash_form($ref=false) {
+function rep_fcash_form(&$form_state, $ref=false) {
   $form['#redirect'] = FALSE;
   $form['repcash'] = array(
 				'#type' => 'fieldset',
@@ -16,6 +16,7 @@ function rep_fcash_form($ref=false) {
 
 function _rep_fcash($ref) {
   global $suser,$saldo_req;
+ 
   $headers=array('Fornitore','Debito/Credito (in Euro)',array('data'=>'Stato','class'=>'noprint'));
   $qsum="SUM(s) as saldo ,IF(SUM(s)<0,0,1) as mylock ";
   $qdate="";

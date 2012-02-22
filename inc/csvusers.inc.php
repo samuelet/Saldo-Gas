@@ -61,7 +61,7 @@ function users_import_form_checkcsv() {
   return $output;
 }
 
-function users_import_form_validate($form_id, $form_values) {
+function users_import_form_validate($form, &$form_state) {
   $op = $_POST['op'];
   switch ($op) {
   case 'Cancella':
@@ -78,7 +78,7 @@ function users_import_form_validate($form_id, $form_values) {
     }
   case 'Controlla':
     $rows = array();
-    if (!$file->filepath) $file = file_check_upload();
+    if (!$file->filepath) $file = file_save_upload('upload');
     if (!$file) {
       form_set_error('users_import','Errore nel caricamento del file');
       return;
@@ -109,7 +109,7 @@ function users_import_form_validate($form_id, $form_values) {
   }
 }
 
-function users_import_form_submit($form_id, $form_values) {
+function users_import_form_submit($form, &$form_state) {
   $op=$_POST['op'];
   if ($op=='Importa') {
     $query="INSERT INTO ".SALDO_UTENTI." (uid,unome,email) VALUES ";

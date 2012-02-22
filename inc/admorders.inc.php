@@ -80,7 +80,7 @@ function admin_orders_form() {
   return $form;
   }
 
-function admin_orders_form_validate($form_id, $form_values) {
+function admin_orders_form_validate($form, &$form_state) {
   $asaldo=$_POST['saldo'];
   if (is_array($asaldo)) {
     foreach ($asaldo as $saldo) {
@@ -91,10 +91,10 @@ function admin_orders_form_validate($form_id, $form_values) {
   }
 }
 
-function admin_orders_form_submit($form_id, $form_values) {
+function admin_orders_form_submit($form, &$form_state) {
   global $suser;
   $aff_rows=0;
-  if ($form_values['op'] == 'Aggiorna' || $form_values['ordact']) {
+  if ($form_state['values']['op'] == 'Aggiorna' || $form_state['values']['ordact']) {
     if (!is_array($asaldo=$_POST['saldo'])) {
       return "";
     }
@@ -110,7 +110,7 @@ function admin_orders_form_submit($form_id, $form_values) {
       } else {
 	$query="UPDATE ".SALDO_ORDINI." set osaldo=".$saldo.",ovalid=".$validv.",olock=".$lockv.",lastduid=".$suser->duid.",otime=NOW()";
 	$query .=" WHERE oid=".$k;
-	$query .= " AND odata='".$form_values['date']."'";
+	$query .= " AND odata='".$form_state['values']['date']."'";
 	$query .= " AND (osaldo<>".$saldo." OR ovalid<>".$validv." OR olock<>".$lockv.")";
 	if ($result=db_query($query)) {
 	  $aff_rows+=db_affected_rows();
@@ -122,7 +122,7 @@ function admin_orders_form_submit($form_id, $form_values) {
     }
     if ($ok) {
       if ($aff_rows > 0) {
-	log_gas("Tesoriere: Aggiornamento ordini",$form_values['date']);
+	log_gas("Tesoriere: Aggiornamento ordini",$form_state['values']['date']);
       }
       drupal_set_message("Aggiornati <em>".$aff_rows."</em> ordini");
     }

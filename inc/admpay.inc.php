@@ -1,10 +1,10 @@
 <?php
-function admpay_import_form($credit=FALSE) {
+function admpay_import_form(&$form_state, $credit=FALSE) {
   $form['help'] = array('#type' => 'fieldset',
 			'#title' => 'Aiuto',
 			'#collapsible'=>true,
 			'#collapsed'=>true,
-			'#value' => "<div>La Spesa/Entrata Gas influisce in modo immediato sulla Cassa del Gas ma non sul salvaresti dei gasati.<br /><strong>Attenzione</strong>: Dato che la Cassa attuale non rappresenta necessariamente il contributo di tutti i gasati, si pu&ograve; valutare di bilanciare una Spesa Gas con dei ".l('Debiti Utenti',$_GET['q'],array(),'act=admucredit')." ripartiti fra tutti o parte dei gasati.</div>",
+			'#value' => "<div>La Spesa/Entrata Gas influisce in modo immediato sulla Cassa del Gas ma non sul salvaresti dei gasati.<br /><strong>Attenzione</strong>: Dato che la Cassa attuale non rappresenta necessariamente il contributo di tutti i gasati, si pu&ograve; valutare di bilanciare una Spesa Gas con dei ".l('Debiti Utenti',$_GET['q'],array('query' => 'act=admucredit'))." ripartiti fra tutti o parte dei gasati.</div>",
 			);
   $form['pay'] = array('#type' => 'fieldset',
 		       '#title' => "Spesa/Entrata Gas",
@@ -62,17 +62,17 @@ function admpay_import_form($credit=FALSE) {
   return $form; 
   }
 
-function admpay_import_form_validate($form_id, $form_values) {
-  if (!is_numeric($form_values['saldo']) || $form_values['saldo']<0) {
-    form_set_error('saldo',$form_values['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
+function admpay_import_form_validate($form, &$form_state) {
+  if (!is_numeric($form_state['values']['saldo']) || $form_state['values']['saldo']<0) {
+    form_set_error('saldo',$form_state['values']['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
   }
 }
 
-function admpay_import_form_submit($form_id, $form_values ) {
+function admpay_import_form_submit($form, &$form_state) {
   global $suser;
   $log_extra="";
   $query="INSERT INTO ".SALDO_DEBITO_CREDITO." (suid,ssaldo,snote,slastduid,stype) VALUES ";
-  switch ($form_values['type']) {
+  switch ($form_state['values']['type']) {
   case 0:
     $stype ='Debito utente';
 
@@ -82,12 +82,12 @@ function admpay_import_form_submit($form_id, $form_values ) {
       $stype ='Credito utente';
     }
     $users=get_users();
-    foreach ($form_values['users'] as $uid) {
+    foreach ($form_state['values']['users'] as $uid) {
       $msg_users[]=$users[$uid];
-      $query .= "(".$uid.",".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type']."),";
+      $query .= "(".$uid.",".$form_state['values']['saldo'].",'".check_plain($form_state['values']['note'])."',".$suser->duid.",".$form_state['values']['type']."),";
     }
     $query = rtrim($query,',');
-    $msg = $stype." di <strong>".$form_values['saldo']."</strong> Euro per <em>".$form_values['note']."</em> agli utenti ".implode("<br \>",$msg_users);
+    $msg = $stype." di <strong>".$form_state['values']['saldo']."</strong> Euro per <em>".$form_state['values']['note']."</em> agli utenti ".implode("<br \>",$msg_users);
     $log = "Tesoriere: Inserito ".$stype;
     $log_extra=implode(",",$msg_users);
     break;
@@ -99,10 +99,10 @@ function admpay_import_form_submit($form_id, $form_values ) {
     if (!$stype) {
       $stype = "Entrata Gas";
     }
-    $msg = $stype." di <strong>".$form_values['saldo']."</strong> Euro per <em>".$form_values['note']."</em>";
-    $query .= "(0,".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type'].")";
+    $msg = $stype." di <strong>".$form_state['values']['saldo']."</strong> Euro per <em>".$form_state['values']['note']."</em>";
+    $query .= "(0,".$form_state['values']['saldo'].",'".check_plain($form_state['values']['note'])."',".$suser->duid.",".$form_state['values']['type'].")";
     $log="Tesoriere: Inserita ".$stype;
-    $log_extra=check_plain($form_values['note']);
+    $log_extra=check_plain($form_state['values']['note']);
     break;
   default:
     return;

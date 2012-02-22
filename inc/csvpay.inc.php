@@ -46,13 +46,13 @@ function pay_impexp_form() {
 			    '#type' => 'fieldset',
 			    '#title' => 'Esporta versamenti',
 			    );
-
+    
     $form['export']['esubmit'] = array(
 				      '#description' => 'Esporta in un file excel la lista degli utenti in modo da potere in seguito compilarlo con i versamenti ed importartarlo.',
 				      '#type' => 'submit',
 				      '#value' => 'Esporta',
 				    );
-
+    
     //Il csv deve ancora essere caricato
     $btn='Controlla';
     $form['import']['upload'] = array(
@@ -68,7 +68,7 @@ function pay_impexp_form() {
 				     '#type' => 'hidden',
 				     '#value' => 'csvpay',
 				     );
- 
+  
   $form['import']['submit'] = array(
 					  '#type' => 'submit',
 					  '#value' => $btn,
@@ -77,7 +77,7 @@ function pay_impexp_form() {
   return $form;
   }
 
-function pay_impexp_form_validate($form_id, $form_values) {
+function pay_impexp_form_validate($form, &$form_state) {
   $op = $_POST['op'];
   switch ($op) {
   case 'Cancella':
@@ -86,7 +86,7 @@ function pay_impexp_form_validate($form_id, $form_values) {
     break;
   case 'Controlla':
     $rows = array();
-    $file = file_check_upload();
+    $file = file_save_upload('upload');
     if (!$file) {
       form_set_error('import][upload','Errore nel caricamento del file');
       return;
@@ -137,12 +137,12 @@ function pay_impexp_form_validate($form_id, $form_values) {
 
 }
 
-function pay_impexp_form_submit($form_id, $form_values) {
+function pay_impexp_form_submit($form, &$form_state) {
   if ($_POST['op'] == 'Esporta') {
     $cols=array("uid","unome","email","versamento");
     if ( !$data=saldo_exportcsv("SELECT uid,unome,email,NULL as versamento from ".SALDO_UTENTI." ORDER BY unome",$cols))
       {
-	drupal_set_message("Nessun utente trovato. Per poter utilizzare questa funzione, devi prima importare degli ".l('utenti',$_GET['q'],array(),'act=csvusers'),"error");
+	drupal_set_message("Nessun utente trovato. Per poter utilizzare questa funzione, devi prima importare degli ".l('utenti',$_GET['q'],array('query' => 'act=csvusers')),"error");
 	return;
       }
 

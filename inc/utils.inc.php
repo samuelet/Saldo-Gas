@@ -171,7 +171,7 @@ function saldo_table ($query,$headers,$sum=array()){
 	$tsaldo['myextra']="";
 	foreach($astr as $op) {
 	  $aop=explode("%",$op);
-	  $tsaldo['myextra'].=l(substr($aop[0],0,1),$_GET['q'],array('title'=>$aop[0]),$aop[1])."|";
+	  $tsaldo['myextra'].=l(substr($aop[0],0,1),$_GET['q'],array('title'=>$aop[0],'query' => $aop[1]))."|";
 	}
 	$tsaldo['myextra']=rtrim($tsaldo['myextra'],"|");
       }
@@ -265,9 +265,10 @@ function get_csv($ptype=1) {
 
 function saldo_mactive($sreq) {
   global $saldo_req;
-  $class=array();
+  $class = array();
+  $class['query'] = 'act='.$sreq;
   if ($sreq==$saldo_req) {
-    $class=array("class" => "saldo_selected");
+    $class["attributes"] = array("class" => "saldo_selected");
   }
   return $class;
 }
@@ -280,13 +281,13 @@ function saldo_mfieldset($mlist,$title) {
     $menu=array();
     if (is_numeric($key)) {
       foreach ($value as $mreq=>$mtitle) {
-	$menu[] =l($mtitle,$_GET['q'],saldo_mactive($mreq),'act='.$mreq);
+	$menu[] =l($mtitle,$_GET['q'],saldo_mactive($mreq));
       }
       $out.="<h3><strong>".$title."</strong></h3><hr />";
       $out.=theme('item_list',$menu);
     } else {
       foreach ($value as $mreq=>$mtitle) {
-	$menu[] =l($mtitle,$_GET['q'],saldo_mactive($mreq),'act='.$mreq);
+	$menu[] =l($mtitle,$_GET['q'],saldo_mactive($mreq));
       }
       $form=array('#type' => 'fieldset',
 		  '#title' => $key,
@@ -359,19 +360,4 @@ function saldo_greaterDate($start_date,$end_date)
     return 1;
   else
     return 0;
-}
-
-function saldo_sql_import($filename, $dbprefix){
-  $file = fopen($filename, "r");
-        
-  while (!feof($file)) {
-    $data .= fread($file, filesize($filename));
-  }
-
-  fclose($file);
-        
-  $query = str_replace('{prefix}', $dbprefix, $data);
-        
-  $result = db_query($query);
-  return $result;
 }

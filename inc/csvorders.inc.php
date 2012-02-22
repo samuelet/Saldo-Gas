@@ -199,30 +199,41 @@ function orders_import_form_validate($form, &$form_state) {
 		$_SESSION['orders_import_table']['headers'][1]=$rows[0][1];
 		$_SESSION['orders_import_table']['headers'][2]=$fidnome;
 		//Rimuovo headers
-		array_shift($rows);
+		//$ar_shifted = array_shift($rows);
 		foreach($rows as $k => $fnomerow) {
+			if ($k == 0) continue;
 			if ($fnomerow[$fidnome]) {
 				$_SESSION['orders_import_table']['table'][$k]['Utente']=$rows[$k]['Utente'];
 				$_SESSION['orders_import_table']['table'][$k]['UserID']=$rows[$k]['UserID'];
 				$_SESSION['orders_import_table']['table'][$k][$fidnome]=$fnomerow[$fidnome];
 			}
 		}
+		if (empty($_SESSION['orders_import_table']['table'])) unset($_SESSION['orders_import_table']);
 	} else {
 		//Salvo l'array che poi importero' nella sessione.
 		$_SESSION['orders_import_table']['headers']=$rows[0];
-		//Controllo se necessario inserire produttori
-		$fornitori=array();
-		$result=db_query("SELECT fnome from ".SALDO_FORNITORI.";");
-		while ($fid = db_fetch_array($result)) {
+	}
+	//Controllo se necessario inserire produttori
+	$fornitori=array();
+	$result=db_query("SELECT fnome from ".SALDO_FORNITORI.";");
+	while ($fid = db_fetch_array($result)) {
 		$fornitori[]=$fid['fnome'];;
-		}
-		array_splice($rows[0],0,2);
-		foreach ($rows[0] as $f) {
-			if (!in_array($f,$fornitori)) {
+	}
+	//Rimuovo colonne Utente, UserID
+	array_splice($rows[0],0,2);
+	foreach ($rows[0] as $f) {
+		if (!in_array($f,$fornitori)) {
+			if (defined('SALDO_REFCANIMPORT')) {
+				$msg = 'Trovato un nuovo fornitore da importare: <strong><em>'.$f. "</em></strong>. ";
+				$msg .= (saldo_check_role(ROLE_TREASURER)) ? "Puoi importarlo andando alla pagina <em>".l('Importa Fornitori',$_GET['q'],array('query' => 'act=csvfids'))."</em>." : "Per favore, contatta il tuo tesoriere , si occuper&agrave lui stesso di importarlo nel gestionale in modo che sia possibile gestirne gli ordini.";
+				drupal_set_message($msg,'warning');
+			} else {
 				drupal_set_message('Il fornitore <strong><em>'.$f. "</em></strong> non esiste! Verr&agrave; importato automaticamente.<br /><strong>ATTENZIONE!</strong> Nel caso invece il fornitore abbia cambiato nome su economia solidale, &egrave FONDAMENTALE cancellare l'importazione e modificare il nome in <em>Gestione fornitori</em>.");
 				$_SESSION['orders_import_table']['fid'][]=$f;
 			}
 		}
+	}
+	if (!defined('SALDO_REFCANIMPORT')) {
 		//Rimuovo headers
 		array_shift($rows);
 		$_SESSION['orders_import_table']['table']=$rows;

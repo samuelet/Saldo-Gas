@@ -34,26 +34,26 @@ function roles_adm_form() {
   return $form;
   }
 
-function roles_adm_form_validate($form_id, $form_values) {
-  if ($form_values['users'] < 1) {
+function roles_adm_form_validate($form, &$form_state) {
+  if ($form_state['values']['users'] < 1) {
     form_set_error('users',t('field is required'));
   }
 }
 
-function roles_adm_form_submit($form_id, $form_values) {
+function roles_adm_form_submit($form, &$form_state) {
   $addroles=FALSE;
-  foreach ($form_values['roles'] as $role) {
-    if ($form_values['roles'][$role]) {
-      $addroles.="(".$form_values['users'].",".$role."),";
+  foreach ($form_state['values']['roles'] as $role) {
+    if ($form_state['values']['roles'][$role]) {
+      $addroles.="(".$form_state['values']['users'].",".$role."),";
     }
   }
-  $query = "DELETE FROM ".SALDO_ROLES." WHERE ruid=".$form_values['users'];
+  $query = "DELETE FROM ".SALDO_ROLES." WHERE ruid=".$form_state['values']['users'];
   if (db_query($query)) {
     if ($addroles) {
       $query = "INSERT INTO ".SALDO_ROLES." VALUES ".rtrim($addroles,",");
       db_query($query);
     }
-    log_gas("Amministratore: Modifica ruoli utente",'NULL',implode("",get_users($form_values['users'])));
-    drupal_set_message("Il ruolo dell'utente <em>".implode("",get_users($form_values['users']))."</em> &egrave; stato modificato.");
+    log_gas("Amministratore: Modifica ruoli utente",'NULL',implode("",get_users($form_state['values']['users'])));
+    drupal_set_message("Il ruolo dell'utente <em>".implode("",get_users($form_state['values']['users']))."</em> &egrave; stato modificato.");
   }
 }
