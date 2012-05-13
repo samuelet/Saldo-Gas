@@ -300,17 +300,19 @@ function saldo_mfieldset($mlist,$title) {
     return $out;
 }
 
-function saldo_exportcsv($query,$cols=array()) {
+function saldo_exportcsv($query, $cols=array(), $options=array()) {
+    $sep = ($options['sep']) ? $options['sep'] : "\t";
+    $filename = ($options['filename']) ? $options['filename'] : "gas_versamenti";
     $data=$header='';
     if (!empty($cols)) {
-      $header = implode("\t",$cols);
+      $header = implode($sep,$cols);
     } else {
       if (!preg_match("/ from (\S+)/i",$query,$table)) {
         return false;
       }
       $result = db_query("SHOW COLUMNS FROM ".$table[1]);
       while ($fields = db_fetch_array($result)) {
-	$header .= $fields['Field'] . "\t";
+	    $header .= $fields['Field'] . $sep;
       }
     }
     $header=trim($header);
@@ -322,12 +324,12 @@ function saldo_exportcsv($query,$cols=array()) {
 	  {                                            
 	    if ( ( !isset( $value ) ) || ( $value == "" ) )
 	      {
-		$value = "\t";
+		$value = $sep;
 	      }
 	    else
 	  {
             $value = str_replace( '"' , '""' , $value );
-            $value = '"' . $value . '"' . "\t";
+            $value = '"' . $value . '"' . $sep;
 	  }
 	    $line .= $value;
 	  }
@@ -338,7 +340,7 @@ function saldo_exportcsv($query,$cols=array()) {
       return false;
     }
     drupal_set_header("Content-type: application/octet-stream");
-    drupal_set_header("Content-Disposition: attachment; filename=gas_versamenti.xls");
+    drupal_set_header("Content-Disposition: attachment; filename=".$filename.".xls");
     drupal_set_header("Content-Length: ".strlen($header."\n".$data));
     drupal_set_header("Pragma: no-cache");
     drupal_set_header("Expires: 0");
