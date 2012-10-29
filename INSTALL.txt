@@ -9,7 +9,7 @@ http://samuele.netsons.org/darcs/saldo6.x/saldo.tar.gz ---> VERSIONE DRUPAL 6.x
 
 In alternativa:
 https://github.com/samuelet/Saldo-Gas/zipball/master ---> VERSIONE DRUPAL 5.x
-https://github.com/samuelet/Saldo-Gas6.x/zipball/master ---> VERSIONE DRUPAL 6.x
+https://github.com/samuelet/Saldo-Gas/zipball/6.x ---> VERSIONE DRUPAL 6.x
 
 Per gli sviluppatori è possibile utilizzare darcs (disponibile in tutte le maggiori distribuzioni linux, oppure scaribale
 da http://darcs.net/) oppure Git.
