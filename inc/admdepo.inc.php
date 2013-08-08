@@ -23,6 +23,19 @@ function admdepo_import_form() {
 				'#attributes' => array('class' => 'select-filter-users'),
 				);
 
+  $form['pay']['date'] = array(
+				    '#type' => 'textfield',
+				    '#title' => 'Data del versamento',
+				    '#attributes' => array('class' => 'jscalendar'),
+				    '#description' => 'Inserire la data nel formato gg/mm/aaaa',
+				    '#jscalendar_ifFormat' => '%d/%m/%Y',
+				    '#jscalendar_showsTime' => 'false',
+				    '#default_value' => date("d/m/Y"),
+				    '#size' => 10,
+				    '#maxlength' => 10,
+				    '#required' => TRUE,
+				    );
+
   $form['pay']['saldo']= array(
 			     '#title' => "Versamento",
 			     '#type' => 'textfield',
@@ -40,6 +53,14 @@ function admdepo_import_form() {
   }
 
 function admdepo_import_form_validate($form_id, $form_values) {
+  if (!datevalid($form_values['date'])) {
+    form_set_error('saldo',$form_values['date']. " non &egrave una data valida!"); 
+  }
+
+  if (saldo_greaterDate($form_values['date'],date('d/m/Y'))) {
+    form_set_error('saldo',$form_values['date']. " &egrave una data futura!"); 
+  }
+
   if (!is_numeric($form_values['saldo']) || $form_values['saldo']<0 || $form_values['saldo']>=10000) {
     form_set_error('saldo',$form_values['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
   }
@@ -51,10 +72,11 @@ function admdepo_import_form_validate($form_id, $form_values) {
 
 function admdepo_import_form_submit($form_id, $form_values) {
   global $suser;
-  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid) VALUES (".$form_values['user'].",".$form_values['saldo'].",".$suser->duid.");";
+  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid,ltime) VALUES (".$form_values['user'].",".$form_values['saldo'].",".$suser->duid.",'".datevalid($form_values['date'])."');";
+  drupal_set_message($query);
   if (db_query($query)) {
     $luser=implode("",get_users($form_values['user']));
-    drupal_set_message("Inserito versamento di ".$form_values['saldo']." Euro per l'utente ".$luser);
+    drupal_set_message("Inserito versamento di ".$form_values['saldo']." Euro per l'utente ".$luser.' in data '.datemysql($form_values['date'],"-","/"));
     log_gas("Tesoriere: Inserito Versamento utente",'NULL',$luser);
   } else {
     drupal_set_message("Errore inserimento versamento di ".$form_values['saldo']." Euro per l'utente ".implode("",get_users($form_values['user'])),'error');
