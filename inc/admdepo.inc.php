@@ -23,6 +23,19 @@ function admdepo_import_form() {
 				'#attributes' => array('class' => 'select-filter-users'),
 				);
 
+  $form['pay']['date'] = array(
+				    '#type' => 'textfield',
+				    '#title' => 'Data del versamento',
+				    '#attributes' => array('class' => 'jscalendar'),
+				    '#description' => 'Inserire la data nel formato gg/mm/aaaa',
+				    '#jscalendar_ifFormat' => '%d/%m/%Y',
+				    '#jscalendar_showsTime' => 'false',
+				    '#default_value' => date("d/m/Y"),
+				    '#size' => 10,
+				    '#maxlength' => 10,
+				    '#required' => TRUE,
+				    );
+
   $form['pay']['saldo']= array(
 			     '#title' => "Versamento",
 			     '#type' => 'textfield',
@@ -40,6 +53,14 @@ function admdepo_import_form() {
   }
 
 function admdepo_import_form_validate($form, &$form_state) {
+  if (!datevalid($form_state['values']['date'])) {
+    form_set_error('saldo',$form_state['values']['date']. " non &egrave una data valida!"); 
+  }
+
+  if (saldo_greaterDate($form_state['values']['date'],date('d/m/Y'))) {
+    form_set_error('saldo',$form_state['values']['date']. " &egrave una data futura!"); 
+  }
+
   if (!is_numeric($form_state['values']['saldo']) || $form_state['values']['saldo']<0 || $form_state['values']['saldo']>=10000) {
     form_set_error('saldo',$form_state['values']['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
   }
@@ -51,7 +72,7 @@ function admdepo_import_form_validate($form, &$form_state) {
 
 function admdepo_import_form_submit($form, &$form_state) {
   global $suser;
-  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid) VALUES (".$form_state['values']['user'].",".$form_state['values']['saldo'].",".$suser->duid.");";
+  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid,ltime) VALUES (".$form_state['values']['user'].",".$form_state['values']['saldo'].",".$suser->duid.",'".datevalid($form_state['values']['date'])."');";
   if (db_query($query)) {
     $luser=implode("",get_users($form_state['values']['user']));
     drupal_set_message("Inserito versamento di ".$form_state['values']['saldo']." Euro per l'utente ".$luser);
