@@ -72,12 +72,12 @@ function admdepo_import_form_validate($form_id, $form_values) {
 
 function admdepo_import_form_submit($form_id, $form_values) {
   global $suser;
-  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid,ltime) VALUES (".$form_values['user'].",".$form_values['saldo'].",".$suser->duid.",'".datevalid($form_values['date'])."');";
-  drupal_set_message($query);
+  $date = datevalid($form_values['date']);
+  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid,ltime) VALUES (".$form_values['user'].",".$form_values['saldo'].",".$suser->duid.",'".$date."');";
   if (db_query($query)) {
     $luser=implode("",get_users($form_values['user']));
     drupal_set_message("Inserito versamento di ".$form_values['saldo']." Euro per l'utente ".$luser.' in data '.datemysql($form_values['date'],"-","/"));
-    log_gas("Tesoriere: Inserito Versamento utente",'NULL',$luser);
+    log_gas("Tesoriere: Inserito Versamento utente",$date,$luser);
   } else {
     drupal_set_message("Errore inserimento versamento di ".$form_values['saldo']." Euro per l'utente ".implode("",get_users($form_values['user'])),'error');
   }
