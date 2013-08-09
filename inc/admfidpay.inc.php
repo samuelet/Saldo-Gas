@@ -61,11 +61,11 @@ function admfidpay_import_form() {
 
 function admfidpay_import_form_validate($form, &$form_state) {
   if (!datevalid($form_state['values']['date'])) {
-    form_set_error('saldo',$form_state['values']['date']. " non &egrave una data valida!"); 
+    form_set_error('date',$form_state['values']['date']. " non &egrave una data valida!"); 
   }
 
   if (saldo_greaterDate($form_state['values']['date'],date('d/m/Y'))) {
-    form_set_error('saldo',$form_state['values']['date']. " &egrave una data futura!"); 
+    form_set_error('date',$form_state['values']['date']. " &egrave una data futura!"); 
   }
 
   if (!is_numeric($form_state['values']['saldo']) || $form_state['values']['saldo']<0 || $form_state['values']['saldo']>=10000) {
