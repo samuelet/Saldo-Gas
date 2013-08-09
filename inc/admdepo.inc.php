@@ -54,11 +54,11 @@ function admdepo_import_form() {
 
 function admdepo_import_form_validate($form_id, $form_values) {
   if (!datevalid($form_values['date'])) {
-    form_set_error('saldo',$form_values['date']. " non &egrave una data valida!"); 
+    form_set_error('date',$form_values['date']. " non &egrave una data valida!"); 
   }
 
   if (saldo_greaterDate($form_values['date'],date('d/m/Y'))) {
-    form_set_error('saldo',$form_values['date']. " &egrave una data futura!"); 
+    form_set_error('date',$form_values['date']. " &egrave una data futura!"); 
   }
 
   if (!is_numeric($form_values['saldo']) || $form_values['saldo']<0 || $form_values['saldo']>=10000) {
