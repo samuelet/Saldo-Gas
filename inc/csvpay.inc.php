@@ -126,11 +126,11 @@ function pay_impexp_form_validate($form, &$form_state) {
     break;
   case 'Importa':
     $mycsv=$_SESSION['pay_import_table'];
-    if (!datevalid($form_values['date'])) {
-      form_set_error('date',$form_values['date']. " non &egrave una data valida!"); 
+    if (!datevalid($form_state['values']['date'])) {
+      form_set_error('date',$form_state['values']['date']. " non &egrave una data valida!"); 
   }
-    if (saldo_greaterDate($form_values['date'],date('d/m/Y'))) {
-      form_set_error('date',$form_values['date']. " &egrave una data futura!"); 
+    if (saldo_greaterDate($form_state['values']['date'],date('d/m/Y'))) {
+      form_set_error('date',$form_state['values']['date']. " &egrave una data futura!"); 
     }
     if (!is_array($mycsv)) {
       form_set_error('import][upload','Errore interno. Prova a reimportare il file');
@@ -167,7 +167,7 @@ function pay_impexp_form_submit($form, &$form_state) {
 
   } elseif ($_POST['op']=='Importa') {
     global $suser;
-    $date = datevalid($form_values['date']);
+    $date = datevalid($form_state['values']['date']);
     $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid,ltime) VALUES ";
     $extra = '';
     $count = 0;
@@ -179,7 +179,7 @@ function pay_impexp_form_submit($form, &$form_state) {
     $query = rtrim($query,',');
     unset($_SESSION['pay_import_table']);
     if (db_query($query)) {
-      drupal_set_message($count." versamenti importati correttamente alla data ".datemysql($form_values['date'],"-","/"));
+      drupal_set_message($count." versamenti importati correttamente alla data ".datemysql($form_state['values']['date'],"-","/"));
       log_gas("Tesoriere: Importazione versamenti utente",$date, $extra);
     } else {
       drupal_set_message("Errore importazione versamenti",'error');
