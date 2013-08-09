@@ -128,7 +128,7 @@ function pay_impexp_form_validate($form_id, $form_values) {
     $mycsv=$_SESSION['pay_import_table'];
     if (!datevalid($form_values['date'])) {
       form_set_error('date',$form_values['date']. " non &egrave una data valida!"); 
-  }
+    }
     if (saldo_greaterDate($form_values['date'],date('d/m/Y'))) {
       form_set_error('date',$form_values['date']. " &egrave una data futura!"); 
     }
