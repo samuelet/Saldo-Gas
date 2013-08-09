@@ -15,7 +15,8 @@ include_once (SALDO_INC."/utils.inc.php");
 #Necessario?
 //$GLOBALS['conf']['cache'] = FALSE;
 $grp_admins='Saldo Admins';
-$gas_subgroups=array('ms_'=>'GAS Massa','mg_'=>'GAS Montignoso');
+#$gas_subgroups=array('ms_'=>'GAS Massa','mg_'=>'GAS Montignoso');
+$gas_subgroups=array('mstest_'=>'GAS Massa TEST');
 
 $suser=get_user($gas_subgroups);
 
