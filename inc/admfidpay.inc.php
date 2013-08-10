@@ -82,7 +82,7 @@ function admfidpay_import_form_submit($form, &$form_state) {
   $query="INSERT INTO ".SALDO_FIDPAGAMENTO." (fpfid,fpsaldo,fplastduid,fpnote,fpltime) VALUES (".$form_state['values']['fid'].",".$form_state['values']['saldo'].",".$suser->duid.",'".check_plain($form_state['values']['note'])."','".$date."');";
   if (db_query($query)) {
     $fids=implode(",",get_fids(array($form_state['values']['fid'])));
-    drupal_set_message("Inserito pagamento di ".$form_state['values']['saldo']." Euro al fornitore ".$fids);
+    drupal_set_message("Inserito pagamento di ".$form_state['values']['saldo']." Euro al fornitore ".$fids.' in data '.datemysql($form_state['values']['date'],"-","/"));
     log_gas("Tesoriere: Pagamento fornitore",$date,$fids);
   } else {
     drupal_set_message("Errore inserimento pagamento di ".$form_state['values']['saldo']." Euro al fornitore ".implode(",",get_fids(array($form_state['values']['fid']))),'error');
