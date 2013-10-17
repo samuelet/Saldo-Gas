@@ -354,8 +354,8 @@ function saldo_es_pwd($ptype) {
 
 function saldo_greaterDate($start_date,$end_date)
 {
-  $start = strtotime($start_date);
-  $end = strtotime($end_date);
+  $start = strtotime(str_replace("/","-",$start_date));
+  $end = strtotime(str_replace("/","-",$end_date));
   if ($start-$end > 0)
     return 1;
   else
