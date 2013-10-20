@@ -103,7 +103,7 @@ function admpay_import_form_submit($form_id, $form_values ) {
     $users=get_users();
     foreach ($form_values['users'] as $uid) {
       $msg_users[]=$users[$uid];
-      $query .= "(".$uid.",".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type'].",".datemysql($form_values['date'])."),";
+      $query .= "(".$uid.",".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type'].",'".datemysql($form_values['date'])."'),";
     }
     $query = rtrim($query,',');
     $msg = $stype." di <strong>".$form_values['saldo']."</strong> Euro per <em>".$form_values['note']."</em> agli utenti:<br \>".implode("<br \>",$msg_users);
@@ -119,7 +119,7 @@ function admpay_import_form_submit($form_id, $form_values ) {
       $stype = "Entrata Gas";
     }
     $msg = $stype." di <strong>".$form_values['saldo']."</strong> Euro per <em>".$form_values['note']."</em>";
-    $query .= "(0,".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type'].",".datemysql($form_values['date']).")";
+    $query .= "(0,".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type'].",'".datemysql($form_values['date'])."')";
     $log="Tesoriere: Inserita ".$stype;
     $log_extra=check_plain($form_values['note']);
     break;
@@ -128,7 +128,7 @@ function admpay_import_form_submit($form_id, $form_values ) {
   }
 
   $msg .= " alla data ".datemysql($form_values['date'],"-","/");
-  if (db_query($query)) {
+  if (db_query($query)) {   
     drupal_set_message("Inserito ".$msg);
     log_gas($log,$date,$log_extra);
   } else {
