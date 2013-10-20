@@ -9,12 +9,26 @@ function admpay_import_form($credit=FALSE) {
   $form['pay'] = array('#type' => 'fieldset',
 		       '#title' => "Spesa/Entrata Gas",
 		       );
+		       
   $form['pay']['type'] = array('#title' => "Tipo",
 			       '#type' => "radios",
 			       '#description' => "Tipo di movimento.",
 			       '#required' => TRUE,
 			       '#options' => array(2 => 'Spesa',3 => 'Entrata'),
 			       );
+
+  $form['pay']['date'] = array(
+			       '#type' => 'textfield',
+			       '#title' => 'Data della Spesa/Entrata',
+			       '#attributes' => array('class' => 'jscalendar'),
+			       '#description' => 'Inserire la data nel formato gg/mm/aaaa . La data verr&agrave applicata a tutti i versamenti.',
+			       '#jscalendar_ifFormat' => '%d/%m/%Y',
+			       '#jscalendar_showsTime' => 'false',
+			       '#default_value' => date("d/m/Y"),
+			       '#size' => 10,
+			       '#maxlength' => 10,
+			       '#required' => TRUE,
+			       ); 
   
   if ($credit) {
     $form['help']['#value'] = "<div>Sia il Debito che il Credito Utente influiscono in modo immediato sul salvaresti del gasato, ma non sulla Cassa totale del Gas.</div>";
@@ -66,12 +80,17 @@ function admpay_import_form_validate($form_id, $form_values) {
   if (!is_numeric($form_values['saldo']) || $form_values['saldo']<0) {
     form_set_error('saldo',$form_values['saldo']. " non &egrave un valore monetario valido. Operazione non eseguita!"); 
   }
+  if (saldo_greaterDate($form_values['date'],date('d/m/Y'))) {
+    form_set_error('date',$form_values['date']. " &egrave una data futura!"); 
+  }
+
 }
 
 function admpay_import_form_submit($form_id, $form_values ) {
   global $suser;
+  $date = datevalid($form_values['date']);
   $log_extra="";
-  $query="INSERT INTO ".SALDO_DEBITO_CREDITO." (suid,ssaldo,snote,slastduid,stype) VALUES ";
+  $query="INSERT INTO ".SALDO_DEBITO_CREDITO." (suid,ssaldo,snote,slastduid,stype,sltime) VALUES ";
   switch ($form_values['type']) {
   case 0:
     $stype ='Debito utente';
@@ -84,10 +103,10 @@ function admpay_import_form_submit($form_id, $form_values ) {
     $users=get_users();
     foreach ($form_values['users'] as $uid) {
       $msg_users[]=$users[$uid];
-      $query .= "(".$uid.",".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type']."),";
+      $query .= "(".$uid.",".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type'].",".datemysql($form_values['date'])."),";
     }
     $query = rtrim($query,',');
-    $msg = $stype." di <strong>".$form_values['saldo']."</strong> Euro per <em>".$form_values['note']."</em> agli utenti ".implode("<br \>",$msg_users);
+    $msg = $stype." di <strong>".$form_values['saldo']."</strong> Euro per <em>".$form_values['note']."</em> agli utenti:<br \>".implode("<br \>",$msg_users);
     $log = "Tesoriere: Inserito ".$stype;
     $log_extra=implode(",",$msg_users);
     break;
@@ -100,7 +119,7 @@ function admpay_import_form_submit($form_id, $form_values ) {
       $stype = "Entrata Gas";
     }
     $msg = $stype." di <strong>".$form_values['saldo']."</strong> Euro per <em>".$form_values['note']."</em>";
-    $query .= "(0,".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type'].")";
+    $query .= "(0,".$form_values['saldo'].",'".check_plain($form_values['note'])."',".$suser->duid.",".$form_values['type'].",".datemysql($form_values['date']).")";
     $log="Tesoriere: Inserita ".$stype;
     $log_extra=check_plain($form_values['note']);
     break;
@@ -108,9 +127,10 @@ function admpay_import_form_submit($form_id, $form_values ) {
     return;
   }
 
+  $msg .= " alla data ".datemysql($form_values['date'],"-","/");
   if (db_query($query)) {
     drupal_set_message("Inserito ".$msg);
-    log_gas($log,'NULL',$log_extra);
+    log_gas($log,$date,$log_extra);
   } else {
     drupal_set_message("Errore inserimento ".$msg,'error');
   }
