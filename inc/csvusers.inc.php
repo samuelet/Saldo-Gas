@@ -85,8 +85,13 @@ function users_import_form_validate($form, &$form_state) {
     }
     $handle = fopen($file->filepath, "r");
     while (($data = fgetcsv($handle, 0, ",")) !== FALSE) {
-      $rows[]=array($data[0],utf8_encode($data[1]),$data[2]);
+      # Fix Codice a barre
+      $user_id = $data[0];
+      $user_id = substr($data[0], 3);
+      $user_id = substr($user_id, 0, -1);
+      $rows[]=array((int)$user_id, utf8_encode($data[1]), $data[2]);
     }
+    $rows[0][0]="User ID";
     fclose($handle);
     file_delete($file->filepath);
     //Salvo l'array che poi importero' nella sessione.
