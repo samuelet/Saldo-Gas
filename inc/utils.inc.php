@@ -251,7 +251,6 @@ function get_csv($ptype=1) {
       $towns=http_build_query($towns,'', '&');
       $out=drupal_http_request('https://www.eventhia.com/index.php?do=admin_search_users',$headers,'POST','username=&name=&producerid=0&subgroupid=0&'.$towns.'&submit=Cerca',0);
     } else {
-    var_dump(htmlentities($out->data));exit;
       return false;
     }
   } else {
