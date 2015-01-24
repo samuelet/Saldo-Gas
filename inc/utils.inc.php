@@ -27,6 +27,7 @@ function datevalid($data,$human=FALSE) {
 }
 
 function _utf8_rows(&$value) {
+  $value = str_replace(chr(128),'',$value);
   $value = utf8_encode($value);
 }
 
