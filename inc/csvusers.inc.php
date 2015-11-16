@@ -89,7 +89,7 @@ function users_import_form_validate($form_id, $form_values) {
       $user_id = $data[0];
       $user_id = substr($data[0], 3);
       $user_id = substr($user_id, 0, -1);
-      $rows[]=array((int)$user_id, utf8_encode($data[1]), $data[2]);
+      $rows[]=array((int)$user_id, utf8_encode($data[1]." ".$data[2]), $data[3]);
     }
     $rows[0][0]="User ID";
     fclose($handle);
