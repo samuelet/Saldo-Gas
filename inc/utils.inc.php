@@ -236,7 +236,8 @@ function get_csv($ptype=1) {
     drupal_set_message("Le credenziali per l'accesso su Economia Solidale non sono state impostate",'error');
     return false;
   }
-  $regxfile='/public\/tmp\/'.'\w+'.$puser->puser.'.csv/i';
+#  $regxfile='/public\/tmp\/'.'\w+'.$puser->puser.'.csv/i';
+  $regxfile='/download\.php\?do=admin_search_users_csv/i';
   $headers = array('Content-Type' => 'application/x-www-form-urlencoded');
   $query="username=".$puser->puser."&password=".$puser->ppwd."&save=1&submit=Entra";
   $out=drupal_http_request('https://www.eventhia.com/index.php?do=login',$headers,'POST',$query,0);
@@ -256,12 +257,13 @@ function get_csv($ptype=1) {
       return false;
     }
   } else {
-    $out=drupal_http_request('https://www.eventhia.com/index.php?do=shop_compressed_orders&done=0',array('Cookie'=>$setcookie[0]),'GET');
+    $regxfile='/download.php\?do=shop_summary_orders_csv&\S+done=0/i';
+    $out=drupal_http_request('https://www.eventhia.com/index.php?do=shop_summary_orders&done=0',array('Cookie'=>$setcookie[0]),'GET');
   }
   if (!preg_match($regxfile,$out->data,$match)) {
     return false;
   }
-  $out=drupal_http_request("https://www.eventhia.com/".$match[0]);
+  $out=drupal_http_request(decode_entities("https://www.eventhia.com/".$match[0]),array('Cookie'=>$setcookie[0]));
   return $out->data;
 }
 
