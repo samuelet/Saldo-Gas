@@ -239,25 +239,25 @@ function get_csv($ptype=1) {
   $regxfile='/download\.php\?do=admin_search_users_csv/i';
   $headers = array('Content-Type' => 'application/x-www-form-urlencoded');
   $query="username=".$puser->puser."&password=".$puser->ppwd."&save=1&submit=Entra";
-  $out=drupal_http_request('http://www.eventhia.com/index.php?do=login',$headers,'POST',$query,0);
+  $out=drupal_http_request('https://www.eventhia.com/it/index.php?do=login',$headers,'POST',$query,0);
   if (!$out->headers['Set-Cookie']) {
     return false;
   }
   $setcookie=explode(";",$out->headers['Set-Cookie']);
   if ($ptype == 2) {
     $headers['Cookie']=$setcookie[0];
-    $out=drupal_http_request('http://www.eventhia.com/index.php?do=admin_search_users',array('Cookie'=>$setcookie[0]),'GET');
-    if (preg_match_all('/input value="(.*?)" name="(town[0-9]*)"/', $out->data, $arrtowns, PREG_PATTERN_ORDER)) {
+    $out=drupal_http_request('https://www.eventhia.com/it/index.php?do=admin_search_users',array('Cookie'=>$setcookie[0]),'GET');
+    if (preg_match_all('/input value="(.*?)" name=\'(town[0-9]*)\' id=\'town[0-9]*\' type=\'checkbox\'/', $out->data, $arrtowns, PREG_PATTERN_ORDER)) {
       $towns=array_combine($arrtowns[2],$arrtowns[1]);
       $towns=http_build_query($towns,'', '&');
 #      $out=drupal_http_request('http://www.eventhia.com/index.php?do=admin_search_users',$headers,'POST','username=&name=&producerid=0&subgroupid=0&'.$towns.'&submit=Cerca',0);
-      $out=drupal_http_request('https://www.eventhia.com/index.php?do=admin_search_users&username=&name=&factoryid=0&subgroupid=0&associate=0&min_num_vol=255&'.$towns.'&search=Cerca',$headers,0);
+      $out=drupal_http_request('https://www.eventhia.com/it/index.php?do=admin_search_users&username=&name=&factoryid=0&subgroupid=0&associate=0&min_num_vol=255&'.$towns.'&search=Cerca',$headers,0);
     } else {
       return false;
     }
   } else {
     $regxfile='/download.php\?do=shop_summary_orders_csv&\S+done=0/i';
-    $out=drupal_http_request('https://www.eventhia.com/index.php?do=shop_summary_orders&done=0',array('Cookie'=>$setcookie[0]),'GET');
+    $out=drupal_http_request('https://www.eventhia.com/it/index.php?do=shop_summary_orders&done=0',array('Cookie'=>$setcookie[0]),'GET');
   }
   if (!preg_match($regxfile,$out->data,$match)) {
     return false;
