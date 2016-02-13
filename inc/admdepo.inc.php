@@ -11,13 +11,21 @@ function admdepo_import_form() {
 
   $form['pay'] = array(
 				'#type' => 'fieldset',
-				'#title' => 'Versamento Utente',
+				'#title' => 'Versamento/Storno-Versamento Utente',
 				);
   
+  $form['pay']['type'] = array('#title' => "Tipo",
+			       '#type' => "radios",
+			       '#description' => "Tipo di movimento.",
+			       '#default_value' => 0,
+			       '#required' => TRUE,
+			       '#options' => array('Versamento','Storno Versamento'),
+			       );
+
   $form['pay']['user'] = array(
 				'#type' => 'select',
 				'#title' => 'Utente',
-				'#description' => "Selezionare l'utente che ha eseguito il versamento",
+				'#description' => "Selezionare l'utente a cui assegnare l'importo",
 				'#default_value' => 0,
 				'#options' =>$users,
 				'#attributes' => array('class' => 'select-filter-users'),
@@ -25,7 +33,7 @@ function admdepo_import_form() {
 
   $form['pay']['date'] = array(
 				    '#type' => 'textfield',
-				    '#title' => 'Data del versamento',
+				    '#title' => 'Data',
 				    '#attributes' => array('class' => 'jscalendar'),
 				    '#description' => 'Inserire la data nel formato gg/mm/aaaa',
 				    '#jscalendar_ifFormat' => '%d/%m/%Y',
@@ -37,9 +45,9 @@ function admdepo_import_form() {
 				    );
 
   $form['pay']['saldo']= array(
-			     '#title' => "Versamento",
+			     '#title' => "Importo",
 			     '#type' => 'textfield',
-			     '#description' => "Ammontare del versamento (in Euro).",
+			     '#description' => "Ammontare dell' importo (in Euro).",
 			     '#size' => 6,
 			     '#maxlength' => 8,
 			     );
@@ -73,13 +81,26 @@ function admdepo_import_form_validate($form_id, $form_values) {
 function admdepo_import_form_submit($form_id, $form_values) {
   global $suser;
   $date = datevalid($form_values['date']);
-  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid,ltime) VALUES (".$form_values['user'].",".$form_values['saldo'].",".$suser->duid.",'".$date."');";
+
+  switch ($form_values['type']) {
+  case 0:
+    $versamento=$form_values['saldo'];
+    $svtype="Versamento utente";
+    break;
+  case 1:
+    $versamento="-".$form_values['saldo'];
+    $svtype='Storno Versamento utente';
+    break;
+  default:
+    return;
+  }
+  $query="INSERT INTO ".SALDO_VERSAMENTI." (vuid,vsaldo,vlastduid,ltime,vtype) VALUES (".$form_values['user'].",".$versamento.",".$suser->duid.",'".$date."',".$form_values['type'].");";
   if (db_query($query)) {
     $luser=implode("",get_users($form_values['user']));
-    drupal_set_message("Inserito versamento di ".$form_values['saldo']." Euro per l'utente ".$luser.' in data '.datemysql($form_values['date'],"-","/"));
-    log_gas("Tesoriere: Inserito Versamento utente",$date,$luser);
+    drupal_set_message("Inserito $svtype di ".$form_values['saldo']." Euro per l'utente ".$luser.' in data '.datemysql($form_values['date'],"-","/"));
+    log_gas("Tesoriere: Inserito $svtype utente",$date,$luser);
   } else {
-    drupal_set_message("Errore inserimento versamento di ".$form_values['saldo']." Euro per l'utente ".implode("",get_users($form_values['user'])),'error');
+    drupal_set_message("Errore inserimento $svtype di ".$form_values['saldo']." Euro per l'utente ".implode("",get_users($form_values['user'])),'error');
   }
   drupal_goto($_GET['q'],'act=admdepo');
 }
