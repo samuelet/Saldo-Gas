@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS mg_versamento_gas (
        vsaldo DECIMAL(6,2) NOT NULL DEFAULT 0,
        vlastduid INT(10) unsigned NOT NULL,
        ltime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+       vtype INT(2) unsigned NOT NULL DEFAULT 1,
        PRIMARY KEY (vid),
        KEY (vuid,ltime),
        KEY (vuid,vsaldo)

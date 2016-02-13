@@ -119,7 +119,7 @@ function saldo_main () {
       break;
     case 'admdepo':
       include_once (SALDO_INC.'/admdepo.inc.php');
-      drupal_set_title('Versamenti utente'.$tsrtitle);
+      drupal_set_title('Versamento/Storno-Versamento utente'.$tsrtitle);
       $output.=drupal_get_form('admdepo_import_form');
       break;
     case 'admucredit':
