@@ -41,7 +41,7 @@ function user_paid_form() {
 					      '#default_value'=>0,
 					      '#options' => array(0 => 'Tutto',
 								  1 => 'Ordini',
-								  2 => 'Versamenti',
+								  2 => 'Versamenti/Storni',
 								  3 => 'Debiti/Crediti'),
 					      );
 
@@ -94,11 +94,11 @@ function _paid_list($fids) {
 
   if ($_POST['details']) {
     $aquery[] = "(SELECT odata as mydate,(SELECT fnome FROM ".SALDO_FORNITORI." WHERE ofid=fid),-osaldo as saldo,olock as mylock FROM ".SALDO_ORDINI." WHERE odata >= '".$sdate."'".(($edate) ? " AND odata <= '".$edate."'": '')." AND ouid IN (".$ulist.")".$where.")";
-    $aquery[] = "(SELECT ltime as mydate,'VERSAMENTO',vsaldo as saldo,1 as mylock FROM ".SALDO_VERSAMENTI." WHERE ltime >= '".$sdate."'".(($edate) ? " AND ltime <= '".$edate."'": '')." AND vuid IN (".$ulist."))";
+    $aquery[] = "(SELECT ltime as mydate,IF(vtype=0,'VERSAMENTO','STORNO VERSAMENTO'),vsaldo as saldo,1 as mylock FROM ".SALDO_VERSAMENTI." WHERE ltime >= '".$sdate."'".(($edate) ? " AND ltime <= '".$edate."'": '')." AND vuid IN (".$ulist."))";
     $aquery[] = "(SELECT sltime as mydate,concat('<fieldset class=\'collapsible collapsed\'><legend>',IF(stype=0,'DEBITO','CREDITO'),' UTENTE</legend><div class=\'saldo_note\'>',snote,'</div></fieldset>'),IF(stype=0,-ssaldo,ssaldo) as saldo,1 as mylock FROM ".SALDO_DEBITO_CREDITO." WHERE sltime >= '".$sdate."'".(($edate) ? " AND sltime <= '".$edate."'": '')." AND suid IN (".$ulist."))";
   } else {
     $aquery[] = "(SELECT odata as mydate,'ORDINE',-SUM(osaldo) as saldo,MIN(olock) as mylock FROM ".SALDO_ORDINI." WHERE odata >= '".$sdate."'".(($edate) ? " AND odata <= '".$edate."'": '')." AND ouid in (".$ulist.")".$where." GROUP BY mydate)";
-    $aquery[] = "(SELECT ltime as mydate,'VERSAMENTO',SUM(vsaldo) as saldo,1 as mylock FROM ".SALDO_VERSAMENTI." WHERE ltime >= '".$sdate."'".(($edate) ? " AND ltime <= '".$edate."'": '')." AND vuid IN (".$ulist.") GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d'))";
+    $aquery[] = "(SELECT ltime as mydate,'VERSAMENTO',SUM(vsaldo) as saldo,1 as mylock FROM ".SALDO_VERSAMENTI." WHERE ltime >= '".$sdate."'".(($edate) ? " AND ltime <= '".$edate."'": '')." AND vtype=0 AND vuid IN (".$ulist.") GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d')) UNION ALL (SELECT ltime as mydate,'STORNO VERSAMENTO',SUM(vsaldo) as saldo,1 as mylock FROM ".SALDO_VERSAMENTI." WHERE ltime >= '".$sdate."'".(($edate) ? " AND ltime <= '".$edate."'": '')." AND vtype=1 AND vuid IN (".$ulist.") GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d'))";
     $aquery[] = "(SELECT sltime as mydate,'DEBITO UTENTE',-SUM(ssaldo) as saldo,1 as mylock FROM ".SALDO_DEBITO_CREDITO." WHERE sltime >= '".$sdate."'".(($edate) ? " AND sltime <= '".$edate."'": '')." AND stype=0 AND suid IN (".$ulist.") GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d')) UNION ALL (SELECT sltime as mydate,'CREDITO UTENTE',SUM(ssaldo) as saldo,1 as mylock FROM ".SALDO_DEBITO_CREDITO." WHERE sltime >= '".$sdate."'".(($edate) ? " AND sltime <= '".$edate."'": '')." AND stype=1 AND suid IN (".$ulist.") GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d'))";
   }
   if ($vonly) {
