@@ -49,12 +49,13 @@ function admin_cash_form($admin) {
 						'#default_value'=>0,
 						'#options' => array(0 => 'Tutto',
 								    1 => 'Versamenti utente',
-								    2 => 'Debiti utente',
-								    3 => 'Crediti utente',
-								    4 => 'Pagamenti Fornitore',
-								    5 => 'Spese Gas',
-								    6 => 'Entrate Gas',
-								    7 => 'Ordini'),
+								    2 => 'Storno Versamenti utente',
+								    3 => 'Debiti utente',
+								    4 => 'Crediti utente',
+								    5 => 'Pagamenti Fornitore',
+								    6 => 'Spese Gas',
+								    7 => 'Entrate Gas',
+								    8 => 'Ordini'),
 						);
     if ($admin) {
       $users=array('Tutti')+get_users();
@@ -185,7 +186,7 @@ function _paid_list($admin,$users) {
 	  }
 	}
 	//DEBITI
-      case 2:
+      case 3:
 	if ($admin) {
 	  $query2 = "SELECT sltime as mydate,NULL as uid,IF(snote<>'',CONCAT('<fieldset class=\'collapsible collapsed\' title=\'note\'><legend>',(SELECT unome FROM ".SALDO_UTENTI." WHERE uid=suid),'</legend><div class=\'saldo_note\'>',snote,'</div></fieldset>'),(SELECT unome FROM ".SALDO_UTENTI." WHERE uid=suid)),'DEBITO UTENTE',-ssaldo as saldo,1 as mylock";
 	  $query2.=",CONCAT('Elimina%act=admcash&type=d&id=',sid) as myextra";
@@ -193,7 +194,7 @@ function _paid_list($admin,$users) {
 	  if ($wuser) {
 	    $query2.=" AND suid=".$wuser;
 	  }
-	  if ($vonly =="2") {
+	  if ($vonly =="3") {
 	    $query.=$query2." ORDER by mydate DESC";
 	    break;
 	  } else {
@@ -201,7 +202,7 @@ function _paid_list($admin,$users) {
 	  }
 	}
 	//CREDITI
-      case 3:
+      case 4:
 	if ($admin) {
 	  $query3 = "SELECT sltime as mydate,NULL as uid,IF(snote<>'',CONCAT('<fieldset class=\'collapsible collapsed\' title=\'note\'><legend>',(SELECT unome FROM ".SALDO_UTENTI." WHERE uid=suid),'</legend><div class=\'saldo_note\'>',snote,'</div></fieldset>'),(SELECT unome FROM ".SALDO_UTENTI." WHERE uid=suid)),'CREDITO UTENTE',ssaldo as saldo,1 as mylock";
 	  $query3.=",CONCAT('Elimina%act=admcash&type=c&id=',sid) as myextra";
@@ -209,7 +210,7 @@ function _paid_list($admin,$users) {
 	  if ($wuser) {
 	    $query3.=" AND suid=".$wuser;
 	  }
-	  if ($vonly =="3") {
+	  if ($vonly =="4") {
 	    $query.=$query3." ORDER by mydate DESC";
 	    break;
 	  } else {
@@ -218,56 +219,56 @@ function _paid_list($admin,$users) {
 	  }
 	}
 	//PAGAMENTI FORNITORI
-      case 4:
+      case 5:
 	if (!$wuser) {
 	  $query4 = "SELECT fpltime as mydate,NULL as uid,IF(fpnote<>'',CONCAT('<fieldset class=\'collapsible collapsed\' title=\'note\'><legend>',(SELECT fnome FROM ".SALDO_FORNITORI." WHERE fid=fpfid),'</legend><div class=\'saldo_note\'>',fpnote,'</div></fieldset>'),(SELECT fnome FROM ".SALDO_FORNITORI." WHERE fid=fpfid)),'PAGAMENTO FORNITORE',-fpsaldo as saldo,1 as mylock";
 	  if ($admin) {
 	    $query4.=",CONCAT('Elimina%act=admcash&type=p&id=',fpid) as myextra";
 	  }
 	  $query4.=" FROM ".SALDO_FIDPAGAMENTO." WHERE fpltime >= '".$sdate."'".(($edate) ? " AND fpltime <= '".$edate."'": '');
-	  if ($vonly =="4") {
+	  if ($vonly =="5") {
 	    $query.=$query4." ORDER by mydate DESC";
 	    break;
 	  } else {
 	    $query.="(".$query4.") UNION ALL";
 	  }
-	} else if ($vonly=="4") {
+	} else if ($vonly=="5") {
 	  $query ="SELECT NULL,NULL,NULL";
 	  break;
 	}
 	//SPESE
-      case 5:
+      case 6:
 	if (!$wuser) {
 	  $query5 = "SELECT sltime as mydate,NULL as uid,concat('<fieldset class=\'collapsible collapsed\' title=\'note\'><legend>Note</legend><div class=\'saldo_note\'>',snote,'</div></fieldset>'),'SPESA GAS',-ssaldo as saldo,1 as mylock";
 	  if ($admin) {
 	    $query5.=",CONCAT('Elimina%act=admcash&type=s&id=',sid) as myextra";
 	  }
 	  $query5.=" FROM ".SALDO_DEBITO_CREDITO." WHERE stype=2 AND sltime >= '".$sdate."'".(($edate) ? " AND sltime <= '".$edate."'": '');
-	  if ($vonly =="5") {
+	  if ($vonly =="6") {
 	    $query.=$query5." ORDER by mydate DESC";
 	    break;
 	  } else {
 	    $query.="(".$query5.") UNION ALL";
 	  }
-	} else if ($vonly=="5") {
+	} else if ($vonly=="6") {
 	  $query ="SELECT NULL,NULL,NULL";
 	  break;
 	}
 	//ENTRATE
-      case 6:
+      case 7:
 	if (!$wuser) {
 	  $query6 = "SELECT sltime as mydate,NULL as uid,concat('<fieldset class=\'collapsible collapsed\' title=\'note\'><legend>Note</legend><div class=\'saldo_note\'>',snote,'</div></fieldset>'),'ENTRATA GAS',ssaldo as saldo,1 as mylock";
 	  if ($admin) {
 	    $query6.=",CONCAT('Elimina%act=admcash&type=e&id=',sid) as myextra";
 	  }
 	  $query6.=" FROM ".SALDO_DEBITO_CREDITO." WHERE stype=3 AND sltime >= '".$sdate."'".(($edate) ? " AND sltime <= '".$edate."'": '');
-	  if ($vonly =="6") {
+	  if ($vonly =="7") {
 	    $query.=$query6." ORDER by mydate DESC";
 	    break;
 	  } else {
 	    $query.="(".$query6.") ";
 	  }
-	} else if ($vonly=="6") {
+	} else if ($vonly=="7") {
 	  $query ="SELECT NULL,NULL,NULL";
 	  break;
 	}
@@ -294,23 +295,40 @@ function _paid_list($admin,$users) {
       switch ($vonly) {
       case 0:
       case 1:
-	$query1="SELECT ltime as mydate,'VERSAMENTO',SUM(vsaldo) as saldo,1 as mylock";
+	$query0="SELECT ltime as mydate,'VERSAMENTO',SUM(vsaldo) as saldo,1 as mylock";
 	if ($admin) {
-	  $query1.=",CONCAT('Elimina%act=admcash&type=v&date=',UNIX_TIMESTAMP(ltime)".(($wuser) ? ",'&id=',vuid" : "").") as myextra";
+	  $query0.=",CONCAT('Elimina%act=admcash&type=v&date=',UNIX_TIMESTAMP(ltime)".(($wuser) ? ",'&id=',vuid" : "").") as myextra";
 	}
-	$query1.=" FROM ".SALDO_VERSAMENTI." WHERE ltime >= '".$sdate."'".(($edate) ? " AND ltime <= '".$edate."'": '');
+	$query0.=" FROM ".SALDO_VERSAMENTI." WHERE vtype=0 AND ltime >= '".$sdate."'".(($edate) ? " AND ltime <= '".$edate."'": '');
+	if ($wuser) {
+	  $query0.=" AND vuid=".$wuser;
+	}
+	$query0.=" GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d')";
+	  
+	if ($vonly =="1") {
+	  $query.=$query0." ORDER by mydate DESC";
+	  break;
+	} else {
+	  $query="(".$query0.") UNION ALL ";
+	}
+      case 2:
+	$query1="SELECT ltime as mydate,'STORNO VERSAMENTO',SUM(vsaldo) as saldo,1 as mylock";
+	if ($admin) {
+	  $query1.=",CONCAT('Elimina%act=admcash&type=vs&date=',UNIX_TIMESTAMP(ltime)".(($wuser) ? ",'&id=',vuid" : "").") as myextra";
+	}
+	$query1.=" FROM ".SALDO_VERSAMENTI." WHERE vtype=1 AND ltime >= '".$sdate."'".(($edate) ? " AND ltime <= '".$edate."'": '');
 	if ($wuser) {
 	  $query1.=" AND vuid=".$wuser;
 	}
 	$query1.=" GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d')";
 	  
-	if ($vonly =="1") {
+	if ($vonly =="2") {
 	  $query.=$query1." ORDER by mydate DESC";
 	  break;
 	} else {
-	  $query="(".$query1.") UNION ALL ";
+	  $query.="(".$query1.") UNION ALL ";
 	}
-      case 2:
+      case 3:
 	$query2 = "SELECT sltime as mydate,'DEBITO UTENTE',-SUM(ssaldo) as saldo,1 as mylock";
 	if ($admin) {
 	  $query2.=",CONCAT('Elimina%act=admcash&type=d&date=',UNIX_TIMESTAMP(sltime)".(($wuser) ? ",'&id=',suid" : "").") as myextra";
@@ -321,14 +339,14 @@ function _paid_list($admin,$users) {
 	}
 	$query2.=" GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d')";
 	
-	if ($vonly =="2") {
+	if ($vonly =="3") {
 	  $query.=$query2." ORDER by mydate DESC";
 	  break;
 	} else {
 	  $query.="(".$query2.") ";
 	  $query .="UNION ALL ";
 	}
-      case 3:
+      case 4:
 	$query3 = "SELECT sltime as mydate,'CREDITO UTENTE',SUM(ssaldo) as saldo,1 as mylock";
 	if ($admin) {
 	  $query3.=",CONCAT('Elimina%act=admcash&type=c&date=',UNIX_TIMESTAMP(sltime)".(($wuser) ? ",'&id=',suid" : "").") as myextra";
@@ -339,14 +357,14 @@ function _paid_list($admin,$users) {
 	}
 	$query3.=" GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d')";
 	
-	if ($vonly =="3") {
+	if ($vonly =="4") {
 	  $query.=$query3." ORDER by mydate DESC";
 	  break;
 	} else {
 	  $query.="(".$query3.") ";
 	  if (!$wuser) $query .="UNION ALL ";
 	}
-      case 4:
+      case 5:
 	if (!$wuser) {
 	  $query4="SELECT fpltime as mydate,'PAGAMENTO FORNITORE',-SUM(fpsaldo) as saldo,1 as mylock";
 	  if ($admin) {
@@ -355,17 +373,17 @@ function _paid_list($admin,$users) {
 	  $query4.=" FROM ".SALDO_FIDPAGAMENTO." WHERE fpltime >= '".$sdate."'".(($edate) ? " AND fpltime <= '".$edate."'": '');
 	  $query4.=" GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d')";
 	  
-	  if ($vonly =="4") {
+	  if ($vonly =="5") {
 	    $query.=$query4." ORDER by mydate DESC";
 	    break;
 	  } else {
 	    $query.="(".$query4.") UNION ALL";
 	  }
-	} else if ($vonly=="4") {
+	} else if ($vonly=="5") {
 	  $query ="SELECT NULL,NULL,NULL";
 	  break;
 	}
-      case 5:
+      case 6:
 	if (!$wuser) {
 	  $query5 = "SELECT sltime as mydate,'SPESA GAS',-SUM(ssaldo) as saldo,1 as mylock";
 	  if ($admin) {
@@ -374,17 +392,17 @@ function _paid_list($admin,$users) {
 	  $query5.=" FROM ".SALDO_DEBITO_CREDITO." WHERE stype=2 AND sltime >= '".$sdate."'".(($edate) ? " AND sltime <= '".$edate."'": '');
 	  $query5.=" GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d')";
 
-	  if ($vonly =="5") {
+	  if ($vonly =="6") {
 	    $query.=$query5." ORDER by mydate DESC";
 	    break;
 	  } else {
 	    $query.="(".$query5.") UNION ALL";
 	  }
-	} else if ($vonly=="5") {
+	} else if ($vonly=="6") {
 	  $query ="SELECT NULL,NULL,NULL";
 	  break;
 	}
-      case 6:
+      case 7:
 	if (!$wuser) {
 	  $query6 = "SELECT sltime as mydate,'ENTRATA GAS',SUM(ssaldo) as saldo,1 as mylock";
 	  if ($admin) {
@@ -393,13 +411,13 @@ function _paid_list($admin,$users) {
 	  $query6.=" FROM ".SALDO_DEBITO_CREDITO." WHERE stype=3 AND sltime >= '".$sdate."'".(($edate) ? " AND sltime <= '".$edate."'": '');
 	  $query6.=" GROUP BY DATE_FORMAT(mydate,'%Y-%m-%%d')";
 
-	  if ($vonly =="6") {
+	  if ($vonly =="7") {
 	    $query.=$query6." ORDER by mydate DESC";
 	    break;
 	  } else {
 	    $query.="(".$query6.") ";
 	  }
-	} else if ($vonly=="6") {
+	} else if ($vonly=="7") {
 	  $query ="SELECT NULL,NULL,NULL";
 	  break;
 	}
@@ -503,16 +521,38 @@ function admin_cash_list($type,$date,$id,$fid,$del=false) {
     }
     $query .= "FROM ".SALDO_VERSAMENTI;
     if ($date) {
-      $query.=" WHERE DATE_FORMAT(ltime,'%Y-%m-%%d') = DATE_FORMAT(FROM_UNIXTIME(".$date."),'%Y-%m-%%d')";
+      $query.=" WHERE vtype=0 AND DATE_FORMAT(ltime,'%Y-%m-%%d') = DATE_FORMAT(FROM_UNIXTIME(".$date."),'%Y-%m-%%d')";
       if ($id) {
 	$query.=" AND vuid=".$id;
       }
     } elseif ($id) {
-      $query.=" WHERE vid=".$id;
+      $query.=" WHERE vtype=0 AND vid=".$id;
       $logquery="SELECT CONCAT(unome,' (',email,')') myextra FROM ".SALDO_UTENTI." JOIN ".SALDO_VERSAMENTI." ON vuid=uid WHERE vid=".$id;
     }
     if ($del) {
       $logact="versamenti utente";
+    } else {
+      $query.=" GROUP BY unome";
+    }
+    break;
+  case 'vs':
+    if (!$del) {
+      drupal_set_message("Eliminare STORNO VERSAMENTI utente?");
+      $uqfid="(SELECT unome FROM ".SALDO_UTENTI." WHERE vuid=uid)";
+      $query="SELECT ltime as mydate,".$uqfid." as unome,SUM(vsaldo) as saldo,1 as mylock ";
+    }
+    $query .= "FROM ".SALDO_VERSAMENTI;
+    if ($date) {
+      $query.=" WHERE vtype=1 AND DATE_FORMAT(ltime,'%Y-%m-%%d') = DATE_FORMAT(FROM_UNIXTIME(".$date."),'%Y-%m-%%d')";
+      if ($id) {
+	$query.=" AND vuid=".$id;
+      }
+    } elseif ($id) {
+      $query.=" WHERE vtype=1 AND vid=".$id;
+      $logquery="SELECT CONCAT(unome,' (',email,')') myextra FROM ".SALDO_UTENTI." JOIN ".SALDO_VERSAMENTI." ON vuid=uid WHERE vid=".$id;
+    }
+    if ($del) {
+      $logact="storno versamenti utente";
     } else {
       $query.=" GROUP BY unome";
     }
