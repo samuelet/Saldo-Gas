@@ -25,7 +25,8 @@ function all_cash_form() {
 					 );  
 
   $aquery['Ordine Utente']="SELECT IFNULL(SUM(osaldo),0) as fpsaldo FROM ".SALDO_ORDINI;
-  $aquery['Versamento Utente']="SELECT IFNULL(SUM(vsaldo),0) as vssaldo FROM ".SALDO_VERSAMENTI;
+  $aquery['Versamento Utente']="SELECT IFNULL(SUM(vsaldo),0) as vssaldo FROM ".SALDO_VERSAMENTI. " WHERE vtype=0";
+  $aquery['Storno Versamento Utente']="SELECT IFNULL(SUM(vsaldo),0) as vssaldo FROM ".SALDO_VERSAMENTI. " WHERE vtype=1";
   $aquery['Pagamento Fornitore']="SELECT IFNULL(SUM(fpsaldo),0) as fpsaldo FROM ".SALDO_FIDPAGAMENTO;
   $aquery['Entrata Gas']="SELECT IFNULL(SUM(ssaldo),0) as gusaldo FROM ".SALDO_DEBITO_CREDITO." WHERE stype=3";
   $aquery['Spesa Gas']="SELECT IFNULL(SUM(ssaldo),0) as gesaldo FROM ".SALDO_DEBITO_CREDITO." WHERE stype=2";
@@ -36,6 +37,7 @@ function all_cash_form() {
      if ($datemr=datevalid($_POST['datemr'])) {
      	$aquery['Ordine Utente'] .= " WHERE odata <= '".$datemr."'";
 	$aquery['Versamento Utente'] .= " WHERE ltime <= '".$datemr."'";
+	$aquery['Storno Versamento Utente'] .= " WHERE ltime <= '".$datemr."'";
 	$aquery['Pagamento Fornitore'] .= " WHERE fpltime <= '".$datemr."'";
 	$aquery['Entrata Gas'] .= " AND sltime <= '".$datemr."'";
 	$aquery['Spesa Gas'] .= " AND sltime <= '".$datemr."'";
@@ -60,8 +62,8 @@ function all_cash_form() {
   $asaldo['Fondo Spese'] = $asaldo["Saldo Fornitori"] + $asaldo["Saldo Cassa"] - $asaldo["Salva Resti"];
 
   $main[] = array("<strong>Saldo Fornitori</strong>","=","Pagamento Fornitore - Ordine Utente",$asaldo['Saldo Fornitori']);
-  $main[] = array("<strong>Saldo Cassa</strong>","=","Versamento Utente - Pagamento Fornitore - Spesa Gas + Entrata Gas","<strong>".$asaldo['Saldo Cassa']."</strong>");
-  $main[] = array("<strong>Salva Resti</strong>","=","Credito Utente + Versamento Utente - Debito Utente - Ordine Utente",$asaldo['Salva Resti']);
+  $main[] = array("<strong>Saldo Cassa</strong>","=","Versamento Utente - Storno Versamento Utente - Pagamento Fornitore - Spesa Gas + Entrata Gas","<strong>".$asaldo['Saldo Cassa']."</strong>");
+  $main[] = array("<strong>Salva Resti</strong>","=","Credito Utente + Versamento Utente - Storno Versamento Utente - Debito Utente - Ordine Utente",$asaldo['Salva Resti']);
   $main[] = array("<strong>Fondo Spese</strong>","=","Saldo Fornitori + Saldo Cassa - Salva Resti","<strong>".$asaldo['Fondo Spese']."<strong/>");
   $out.=theme('table',array(),$main);
 
