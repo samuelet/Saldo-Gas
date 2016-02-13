@@ -171,18 +171,35 @@ function _paid_list($admin,$users) {
 	//VERSAMENTI
       case 1:
 	if ($admin) {
-	  $query1="SELECT v.ltime as mydate,d.uid,u.unome,'VERSAMENTO',v.vsaldo as saldo,1 as mylock";
-	  $query1.=",CONCAT('Elimina%act=admcash&type=v&id=',vid) as myextra";
-	  $query1.=" FROM ".SALDO_VERSAMENTI." as v LEFT JOIN ".SALDO_UTENTI." as u ON u.uid=v.vuid LEFT JOIN users as d on u.email=d.mail WHERE v.ltime >= '".$sdate."'".(($edate) ? " AND v.ltime <= '".$edate."'": '');
+	  $query0="SELECT v.ltime as mydate,d.uid,u.unome,'VERSAMENTO',v.vsaldo as saldo,1 as mylock";
+	  $query0.=",CONCAT('Elimina%act=admcash&type=v&id=',vid) as myextra";
+	  $query0.=" FROM ".SALDO_VERSAMENTI." as v LEFT JOIN ".SALDO_UTENTI." as u ON u.uid=v.vuid LEFT JOIN users as d on u.email=d.mail WHERE v.vtype=0 AND v.ltime >= '".$sdate."'".(($edate) ? " AND v.ltime <= '".$edate."'": '');
+	  if ($wuser) {
+	    $query0.=" AND v.vuid=".$wuser;
+	  }
+	  
+	  if ($vonly =="1") {
+	    $query.=$query0." ORDER by mydate DESC";
+	    break;
+	  } else {
+	    $query="(".$query0.") UNION ALL";
+	  }
+	}
+	// STORNO VERSAMENTI
+      case 2:
+	if ($admin) {
+	  $query1="SELECT v.ltime as mydate,d.uid,u.unome,'STORNO VERSAMENTO',v.vsaldo as saldo,1 as mylock";
+	  $query1.=",CONCAT('Elimina%act=admcash&type=vs&id=',vid) as myextra";
+	  $query1.=" FROM ".SALDO_VERSAMENTI." as v LEFT JOIN ".SALDO_UTENTI." as u ON u.uid=v.vuid LEFT JOIN users as d on u.email=d.mail WHERE v.vtype=1 AND v.ltime >= '".$sdate."'".(($edate) ? " AND v.ltime <= '".$edate."'": '');
 	  if ($wuser) {
 	    $query1.=" AND v.vuid=".$wuser;
 	  }
 	  
-	  if ($vonly =="1") {
+	  if ($vonly =="2") {
 	    $query.=$query1." ORDER by mydate DESC";
 	    break;
 	  } else {
-	    $query="(".$query1.") UNION ALL";
+	    $query.="(".$query1.") UNION ALL";
 	  }
 	}
 	//DEBITI
