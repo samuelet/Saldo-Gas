@@ -57,8 +57,8 @@ function all_cash_form() {
   $out=theme('table',$headers,array($asaldo));
 
   $asaldo['Saldo Fornitori'] = $asaldo["Pagamento Fornitore"] - $asaldo["Ordine Utente"];
-  $asaldo['Saldo Cassa'] = $asaldo["Versamento Utente"] - $asaldo["Pagamento Fornitore"] - $asaldo["Spesa Gas"] + $asaldo["Entrata Gas"];
-  $asaldo['Salva Resti']= $asaldo["Credito Utente"] + $asaldo["Versamento Utente"] - $asaldo["Debito Utente"] - $asaldo["Ordine Utente"];
+  $asaldo['Saldo Cassa'] = $asaldo["Versamento Utente"] - $asaldo["Storno Versamento Utente"] - $asaldo["Pagamento Fornitore"] - $asaldo["Spesa Gas"] + $asaldo["Entrata Gas"];
+  $asaldo['Salva Resti']= $asaldo["Credito Utente"] + $asaldo["Versamento Utente"] - $asaldo["Storno Versamento Utente"] - $asaldo["Debito Utente"] - $asaldo["Ordine Utente"];
   $asaldo['Fondo Spese'] = $asaldo["Saldo Fornitori"] + $asaldo["Saldo Cassa"] - $asaldo["Salva Resti"];
 
   $main[] = array("<strong>Saldo Fornitori</strong>","=","Pagamento Fornitore - Ordine Utente",$asaldo['Saldo Fornitori']);
