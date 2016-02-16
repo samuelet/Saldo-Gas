@@ -242,7 +242,7 @@ function saldo_menu() {
   if (saldo_check_role(ROLE_TREASURER)) {
     $mselected=array(array('admorders' => 'Gestione ordini globali',
 			   ),
-		     'Spese/Versamenti' => array('admdepo'=>'Versamenti utente',
+		     'Spese/Versamenti' => array('admdepo'=>'Versamenti/Storno-Versamenti Utente',
 						 'admucredit'=>'Debito/Credito utente',
 						 'admcredit'=>'Spesa/Entrata Gas',
 						 'admfidpay'=>'Pagamenti fornitore',
