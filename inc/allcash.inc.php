@@ -36,8 +36,8 @@ function all_cash_form() {
   if ($_POST['datemr']) {
      if ($datemr=datevalid($_POST['datemr'])) {
      	$aquery['Ordine Utente'] .= " WHERE odata <= '".$datemr."'";
-	$aquery['Versamento Utente'] .= " WHERE ltime <= '".$datemr."'";
-	$aquery['Storno Versamento Utente'] .= " WHERE ltime <= '".$datemr."'";
+	$aquery['Versamento Utente'] .= " AND ltime <= '".$datemr."'";
+	$aquery['Storno Versamento Utente'] .= " AND ltime <= '".$datemr."'";
 	$aquery['Pagamento Fornitore'] .= " WHERE fpltime <= '".$datemr."'";
 	$aquery['Entrata Gas'] .= " AND sltime <= '".$datemr."'";
 	$aquery['Spesa Gas'] .= " AND sltime <= '".$datemr."'";
@@ -68,6 +68,5 @@ function all_cash_form() {
   $out.=theme('table',array(),$main);
 
   $form['allcash']['result'] = array('#value' =>$out);
-
   return $form;
 }
