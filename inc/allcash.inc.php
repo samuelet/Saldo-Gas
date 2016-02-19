@@ -54,11 +54,14 @@ function all_cash_form() {
     $r=db_result(db_query($query));
     $asaldo[$h]=$r;
   }
-  $out=theme('table',$headers,array($asaldo));
+
+  $asaldoh = array_map("abs", $asaldo);
+  $asaldoh = array_map(create_function('$n', 'return number_format($n, 2, ".", "");'), $asaldoh);
+  $out=theme('table',$headers, array($asaldoh));
 
   $asaldo['Saldo Fornitori'] = $asaldo["Pagamento Fornitore"] - $asaldo["Ordine Utente"];
-  $asaldo['Saldo Cassa'] = $asaldo["Versamento Utente"] - $asaldo["Storno Versamento Utente"] - $asaldo["Pagamento Fornitore"] - $asaldo["Spesa Gas"] + $asaldo["Entrata Gas"];
-  $asaldo['Salva Resti']= $asaldo["Credito Utente"] + $asaldo["Versamento Utente"] - $asaldo["Storno Versamento Utente"] - $asaldo["Debito Utente"] - $asaldo["Ordine Utente"];
+  $asaldo['Saldo Cassa'] = $asaldo["Versamento Utente"] + $asaldo["Storno Versamento Utente"] - $asaldo["Pagamento Fornitore"] - $asaldo["Spesa Gas"] + $asaldo["Entrata Gas"];
+  $asaldo['Salva Resti']= $asaldo["Credito Utente"] + $asaldo["Versamento Utente"] + $asaldo["Storno Versamento Utente"] - $asaldo["Debito Utente"] - $asaldo["Ordine Utente"];
   $asaldo['Fondo Spese'] = $asaldo["Saldo Fornitori"] + $asaldo["Saldo Cassa"] - $asaldo["Salva Resti"];
 
   $main[] = array("<strong>Saldo Fornitori</strong>","=","Pagamento Fornitore - Ordine Utente",$asaldo['Saldo Fornitori']);
