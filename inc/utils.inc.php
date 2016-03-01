@@ -247,7 +247,7 @@ function get_csv($ptype=1) {
   if ($ptype == 2) {
     $headers['Cookie']=$setcookie[0];
     $out=drupal_http_request('https://www.eventhia.com/it/index.php?do=admin_search_users',array('Cookie'=>$setcookie[0]),'GET');
-    if (preg_match_all('/input value="(.*?)" name=\'(town[0-9]*)\' id=\'town[0-9]*\' type=\'checkbox\'/', $out->data, $arrtowns, PREG_PATTERN_ORDER)) {
+    if (preg_match_all('/input value="(.*?)" name="(town[0-9]*)" id="town[0-9]*" type="checkbox"/', $out->data, $arrtowns, PREG_PATTERN_ORDER)) {
       $towns=array_combine($arrtowns[2],$arrtowns[1]);
       $towns=http_build_query($towns,'', '&');
 #      $out=drupal_http_request('http://www.eventhia.com/index.php?do=admin_search_users',$headers,'POST','username=&name=&producerid=0&subgroupid=0&'.$towns.'&submit=Cerca',0);
