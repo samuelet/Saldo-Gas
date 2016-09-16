@@ -237,7 +237,7 @@ function get_csv($ptype=1) {
     return false;
   }
 #  $regxfile='/public\/tmp\/'.'\w+'.$puser->puser.'.csv/i';
-  $regxfile='/download\.php\?do=admin_search_users_csv/i';
+  $regxfile='/it\/download\.php\?do=admin_search_users_csv/';
   $headers = array('Content-Type' => 'application/x-www-form-urlencoded');
   $query="username=".$puser->puser."&password=".$puser->ppwd."&save=1&submit=Entra";
   $out=drupal_http_request('https://www.eventhia.com/it/index.php?do=login',$headers,'POST',$query,0);
@@ -257,7 +257,7 @@ function get_csv($ptype=1) {
       return false;
     }
   } else {
-    $regxfile='/download.php\?do=shop_summary_orders_csv&\S+done=0/i';
+    $regxfile='/it\/download.php\?do=shop_summary_orders_csv&\S+done=0/';
     $out=drupal_http_request('https://www.eventhia.com/it/index.php?do=shop_summary_orders&done=0',array('Cookie'=>$setcookie[0]),'GET');
   }
   if (!preg_match($regxfile,$out->data,$match)) {
