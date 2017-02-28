@@ -258,7 +258,7 @@ function get_csv($ptype=1) {
     }
   } else {
     $regxfile='/it\/download.php\?do=shop_summary_orders_csv&\S+done=0/';
-    $out=drupal_http_request('https://www.eventhia.com/it/index.php?do=shop_summary_orders&done=0',array('Cookie'=>$setcookie[0]),'GET');
+    $out=drupal_http_request('https://www.eventhia.com/it/index.php?do=shop_summary_orders&deliverydate=%&done=0',array('Cookie'=>$setcookie[0]),'GET');
   }
   if (!preg_match($regxfile,$out->data,$match)) {
     return false;
